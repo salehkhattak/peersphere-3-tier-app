@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Mentors — PeerSphere{% endblock %}
+
+{% block content %}
+<div class="page-header-section">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h2 class="page-title"><i class="bi bi-mortarboard-fill me-2"></i>Mentors</h2>
+            <p class="page-subtitle">Connect with experienced alumni for career guidance and advice</p>
+        </div>
+        {% if current_user.role in ['alumni', 'admin'] %}
+        <a href="{{ url_for('mentors.register') }}" class="btn btn-primary"><i class="bi bi-plus-lg me-1"></i>Become a Mentor</a>
+        {% endif %}
+    </div>
+
+    <form method="GET" action="{{ url_for('mentors.index') }}" class="mt-3">
+        <div class="search-bar-large">
+            <i class="bi bi-search"></i>
+            <input type="text" name="q" class="search-input-large" placeholder="Search by expertise or name..." value="{{ query }}">
+            <button type="submit" class="btn btn-primary btn-sm">Search</button>
+        </div>
+    </form>
+</div>
+
+<div class="row g-4">
+    {% for mentor in mentors %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card-glass mentor-card">
+            <div class="mentor-card-top">
+                <div class="mentor-avatar">
+                    <img src="{{ url_for('static', filename='uploads/' + mentor.user.profile_picture) if mentor.user.profile_picture != 'default.png' else url_for('static', filename='img/default-avatar.svg') }}" alt="avatar">
+                </div>
+                <div>
+                    <h5 class="mentor-name">{{ mentor.user.name }}</h5>
+                    <span class="role-badge role-alumni"><i class="bi bi-patch-check-fill me-1"></i>Alumni Mentor</span>
+                </div>
+            </div>
+            <div class="mentor-card-body">
+                <p class="text-muted small mb-2">{{ mentor.user.bio[:100] if mentor.user.bio else 'No bio available.' }}{% if mentor.user.bio and mentor.user.bio|length > 100 %}...{% endif %}</p>
+                <div class="mb-2">
+                    <small class="fw-semibold text-muted">Expertise</small>
+                    <div class="skills-container mt-1">
+                        {% for exp in mentor.expertise.split(',') %}
+                        <span class="skill-pill skill-pill-sm">{{ exp.strip() }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <span class="availability-badge {{ 'available' if 'Available' in mentor.availability else '' }}">
+                        <i class="bi bi-clock"></i> {{ mentor.availability }}
+                    </span>
+                    <a href="{{ url_for('messages.chat', user_id=mentor.user.id) }}" class="btn btn-primary btn-sm"><i class="bi bi-chat-dots me-1"></i>Connect</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="card-glass text-center py-5">
+            <i class="bi bi-mortarboard" style="font-size: 3rem; color: var(--text-muted);"></i>
+            <h5 class="mt-3">No mentors available yet</h5>
+            <p class="text-muted">Check back later or become a mentor yourself!</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

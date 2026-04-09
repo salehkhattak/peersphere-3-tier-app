@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang=en>
+  <head>
+    <title>jinja2.exceptions.TemplateSyntaxError: Unexpected end of template. Jinja was looking for the following tags: &#39;elif&#39; or &#39;else&#39; or &#39;endif&#39;. The innermost block that needs to be closed is &#39;if&#39;.
+ // Werkzeug Debugger</title>
+    <link rel="stylesheet" href="?__debugger__=yes&amp;cmd=resource&amp;f=style.css">
+    <link rel="shortcut icon"
+        href="?__debugger__=yes&amp;cmd=resource&amp;f=console.png">
+    <script src="?__debugger__=yes&amp;cmd=resource&amp;f=debugger.js"></script>
+    <script>
+      var CONSOLE_MODE = false,
+          EVALEX = true,
+          EVALEX_TRUSTED = false,
+          SECRET = "Oi5mrUE4Ge8KSMwkdGpo";
+    </script>
+  </head>
+  <body style="background-color: #fff">
+    <div class="debugger">
+<h1>jinja2.exceptions.TemplateSyntaxError</h1>
+<div class="detail">
+  <p class="errormsg">jinja2.exceptions.TemplateSyntaxError: Unexpected end of template. Jinja was looking for the following tags: &#39;elif&#39; or &#39;else&#39; or &#39;endif&#39;. The innermost block that needs to be closed is &#39;if&#39;.
+</p>
+</div>
+<h2 class="traceback">Traceback <em>(most recent call last)</em></h2>
+<div class="traceback">
+  <h3></h3>
+  <ul><li><div class="frame" id="frame-2299362693248">
+  <h4>File <cite class="filename">"D:\peersphere\venv\Lib\site-packages\flask\app.py"</cite>,
+      line <em class="line">1478</em>,
+      in <code class="function">__call__</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">    </span>def __call__(self, environ: dict, start_response: t.Callable) -&gt; t.Any:</pre>
+<pre class="line before"><span class="ws">        </span>&#34;&#34;&#34;The WSGI server calls the Flask application object as the</pre>
+<pre class="line before"><span class="ws">        </span>WSGI application. This calls :meth:`wsgi_app`, which can be</pre>
+<pre class="line before"><span class="ws">        </span>wrapped to apply middleware.</pre>
+<pre class="line before"><span class="ws">        </span>&#34;&#34;&#34;</pre>
+<pre class="line current"><span class="ws">        </span>return self.wsgi_app(environ, start_response)
+<span class="ws">        </span>       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</pre></div>
+</div>
+
+<li><div class="frame" id="frame-2299362693408">
+  <h4>File <cite class="filename">"D:\peersphere\venv\Lib\site-packages\flask\app.py"</cite>,
+      line <em class="line">1458</em>,
+      in <code class="function">wsgi_app</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">            </span>try:</pre>
+<pre class="line before"><span class="ws">                </span>ctx.push()</pre>
+<pre class="line before"><span class="ws">                </span>response = self.full_dispatch_request()</pre>
+<pre class="line before"><span class="ws">            </span>except Exception as e:</pre>
+<pre class="line before"><span class="ws">                </span>error = e</pre>
+<pre class="line current"><span class="ws">                </span>response = self.handle_exception(e)
+<span class="ws">                </span>           ^^^^^^^^^^^^^^^^^^^^^^^^</pre>
+<pre class="line after"><span class="ws">            </span>except:  # noqa: B001</pre>
+<pre class="line after"><span class="ws">                </span>error = sys.exc_info()[1]</pre>
+<pre class="line after"><span class="ws">                </span>raise</pre>
+<pre class="line after"><span class="ws">            </span>return response(environ, start_response)</pre>
+<pre class="line after"><span class="ws">        </span>finally:</pre></div>
+</div>
+
+<li><div class="frame" id="frame-2299362693568">
+  <h4>File <cite class="filename">"D:\peersphere\venv\Lib\site-packages\flask\app.py"</cite>,
+      line <em class="line">1455</em>,
+      in <code class="function">wsgi_app</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">        </span>ctx = self.request_context(environ)</pre>
+<pre class="line before"><span class="ws">        </span>error: BaseException | None = None</pre>
+<pre class="line before"><span class="ws">        </span>try:</pre>
+<pre class="line before"><span class="ws">            </span>try:</pre>
+<pre class="line before"><span class="ws">                </span>ctx.push()</pre>
+<pre class="line current"><span class="ws">                </span>response = self.full_dispatch_request()
+<span class="ws">                </span>           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^</pre>
+<pre class="line after"><span class="ws">            </span>except Exception as e:</pre>
+<pre class="line after"><span class="ws">                </span>error = e</pre>
+<pre class="line after"><span class="ws">                </span>response = self.handle_exception(e)</pre>
+<pre class="line after"><span class="ws">            </span>except:  # noqa: B001</pre>
+<pre class="line after"><span class="ws">                </span>error = sys.exc_info()[1]</pre></div>
+</div>
+
+<li><div class="frame" id="frame-2299362693728">
+  <h4>File <cite class="filename">"D:\peersphere\venv\Lib\site-packages\flask\app.py"</cite>,
+      line <em class="line">869</em>,
+      in <code class="function">full_dispatch_request</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">            </span>request_started.send(self, _async_wrapper=self.ensure_sync)</pre>
+<pre class="line before"><span class="ws">            </span>rv = self.preprocess_request()</pre>
+<pre class="line before"><span class="ws">            </span>if rv is None:</pre>
+<pre class="line before"><span class="ws">                </span>rv = self.dispatch_request()</pre>
+<pre class="line before"><span class="ws">        </span>except Exception as e:</pre>
+<pre class="line current"><span class="ws">            </span>rv = self.handle_user_exception(e)
+<span class="ws">            </span>     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</pre>
+<pre class="line after"><span class="ws">        </span>return self.finalize_request(rv)</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>def finalize_request(</pre>
+<pre class="line after"><span class="ws">        </span>self,</pre>
+<pre class="line after"><span class="ws">        </span>rv: ft.ResponseReturnValue | HTTPException,</pre></div>
+</div>
+
+<li><div class="frame" id="frame-2299362693888">
+  <h4>File <cite class="filename">"D:\peersphere\venv\Lib\site-packages\flask\app.py"</cite>,
+      line <em class="line">867</em>,
+      in <code class="function">full_dispatch_request</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws"></span> </pre>
+<pre class="line before"><span class="ws">        </span>try:</pre>
+<pre class="line before"><span class="ws">            </span>request_started.send(self, _async_wrapper=self.ensure_sync)</pre>
+<pre class="line before"><span class="ws">            </span>rv = self.preprocess_request()</pre>
+<pre class="line before"><span class="ws">            </span>if rv is None:</pre>
+<pre class="line current"><span class="ws">                </span>rv = self.dispatch_request()
+<span class="ws">                </span>     ^^^^^^^^^^^^^^^^^^^^^^^</pre>
+<pre class="line after"><span class="ws">        </span>except Exception as e:</pre>
+<pre class="line after"><span class="ws">            </span>rv = self.handle_user_exception(e)</pre>
+<pre class="line after"><span class="ws">        </span>return self.finalize_request(rv)</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>def finalize_request(</pre></div>
+</div>
+
+<li><div class="frame" id="frame-2299362694048">
+  <h4>File <cite class="filename">"D:\peersphere\venv\Lib\site-packages\flask\app.py"</cite>,
+      line <em class="line">852</em>,
+      in <code class="function">dispatch_request</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">            </span>and req.method == &#34;OPTIONS&#34;</pre>
+<pre class="line before"><span class="ws">        </span>):</pre>
+<pre class="line before"><span class="ws">            </span>return self.make_default_options_response()</pre>
+<pre class="line before"><span class="ws">        </span># otherwise dispatch to the handler for that endpoint</pre>
+<pre class="line before"><span class="ws">        </span>view_args: dict[str, t.Any] = req.view_args  # type: ignore[assignment]</pre>
+<pre class="line current"><span class="ws">        </span>return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+<span class="ws">        </span>       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>def full_dispatch_request(self) -&gt; Response:</pre>
+<pre class="line after"><span class="ws">        </span>&#34;&#34;&#34;Dispatches the request and on top of that performs request</pre>
+<pre class="line after"><span class="ws">        </span>pre and postprocessing as well as HTTP exception catching and</pre>
+<pre class="line after"><span class="ws">        </span>error handling.</pre></div>
+</div>
+
+<li><div class="frame" id="frame-2299362694208">
+  <h4>File <cite class="filename">"D:\peersphere\app\routes\auth.py"</cite>,
+      line <em class="line">62</em>,
+      in <code class="function">register</code></h4>
+  <div class="source "><pre class="line before"><span class="ws"></span> </pre>
+<pre class="line before"><span class="ws">        </span>login_user(user)</pre>
+<pre class="line before"><span class="ws">        </span>flash(&#39;Welcome to PeerSphere! 🎉&#39;, &#39;success&#39;)</pre>
+<pre class="line before"><span class="ws">        </span>return redirect(url_for(&#39;main.dashboard&#39;))</pre>
+<pre class="line before"><span class="ws"></span> </pre>
+<pre class="line current"><span class="ws">    </span>return render_template(&#39;auth/register.html&#39;)
+<span class="ws">    </span>       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws"></span>@auth_bp.route(&#39;/login&#39;, methods=[&#39;GET&#39;, &#39;POST&#39;])</pre>
+<pre class="line after"><span class="ws"></span>def login():</pre>
+<pre class="line after"><span class="ws">    </span>if current_user.is_authenticated:</pre></div>
+</div>
+
+<li><div class="frame" id="frame-2299362694368">
+  <h4>File <cite class="filename">"D:\peersphere\venv\Lib\site-packages\flask\templating.py"</cite>,
+      line <em class="line">152</em>,
+      in <code class="function">render_template</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">        </span>a list is given, the first name to exist will be rendered.</pre>
+<pre class="line before"><span class="ws">    </span>:param context: The variables to make available in the template.</pre>
+<pre class="line before"><span class="ws">    </span>&#34;&#34;&#34;</pre>
+<pre class="line before"><span class="ws">    </span>app = current_app._get_current_object()  # type: ignore[attr-defined]</pre>
+<pre class="line before"><span class="ws">    </span>template = app.jinja_env.get_or_select_template(template_name_or_list)</pre>
+<pre class="line current"><span class="ws">    </span>return _render(app, template, context)
+<span class="ws">    </span>       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws"></span>def render_template_string(source: str, **context: t.Any) -&gt; str:</pre>
+<pre class="line after"><span class="ws">    </span>&#34;&#34;&#34;Render a template from the given source string with the given</pre>
+<pre class="line after"><span class="ws">    </span>context.</pre></div>
+</div>
+
+<li><div class="frame" id="frame-2299362694528">
+  <h4>File <cite class="filename">"D:\peersphere\venv\Lib\site-packages\flask\templating.py"</cite>,
+      line <em class="line">133</em>,
+      in <code class="function">_render</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws"></span>def _render(app: Flask, template: Template, context: dict[str, t.Any]) -&gt; str:</pre>
+<pre class="line before"><span class="ws">    </span>app.update_template_context(context)</pre>
+<pre class="line before"><span class="ws">    </span>before_render_template.send(</pre>
+<pre class="line before"><span class="ws">        </span>app, _async_wrapper=app.ensure_sync, template=template, context=context</pre>
+<pre class="line before"><span class="ws">    </span>)</pre>
+<pre class="line current"><span class="ws">    </span>rv = template.render(context)
+<span class="ws">    </span>     ^^^^^^^^^^^^^^^^^^^^^^^^</pre>
+<pre class="line after"><span class="ws">    </span>template_rendered.send(</pre>
+<pre class="line after"><span class="ws">        </span>app, _async_wrapper=app.ensure_sync, template=template, context=context</pre>
+<pre class="line after"><span class="ws">    </span>)</pre>
+<pre class="line after"><span class="ws">    </span>return rv</pre>
+<pre class="line after"><span class="ws"></span> </pre></div>
+</div>
+
+<li><div class="frame" id="frame-2299362694688">
+  <h4>File <cite class="filename">"D:\peersphere\venv\Lib\site-packages\jinja2\environment.py"</cite>,
+      line <em class="line">1295</em>,
+      in <code class="function">render</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">        </span>ctx = self.new_context(dict(*args, **kwargs))</pre>
+<pre class="line before"><span class="ws"></span> </pre>
+<pre class="line before"><span class="ws">        </span>try:</pre>
+<pre class="line before"><span class="ws">            </span>return self.environment.concat(self.root_render_func(ctx))  # type: ignore</pre>
+<pre class="line before"><span class="ws">        </span>except Exception:</pre>
+<pre class="line current"><span class="ws">            </span>self.environment.handle_exception()
+<span class="ws">            </span>^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>async def render_async(self, *args: t.Any, **kwargs: t.Any) -&gt; str:</pre>
+<pre class="line after"><span class="ws">        </span>&#34;&#34;&#34;This works similar to :meth:`render` but returns a coroutine</pre>
+<pre class="line after"><span class="ws">        </span>that when awaited returns the entire rendered template string.  This</pre>
+<pre class="line after"><span class="ws">        </span>requires the async feature to be enabled.</pre></div>
+</div>
+
+<li><div class="frame" id="frame-2299362694848">
+  <h4>File <cite class="filename">"D:\peersphere\venv\Lib\site-packages\jinja2\environment.py"</cite>,
+      line <em class="line">942</em>,
+      in <code class="function">handle_exception</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">        </span>&#34;&#34;&#34;Exception handling helper.  This is used internally to either raise</pre>
+<pre class="line before"><span class="ws">        </span>rewritten exceptions or return a rendered traceback for the template.</pre>
+<pre class="line before"><span class="ws">        </span>&#34;&#34;&#34;</pre>
+<pre class="line before"><span class="ws">        </span>from .debug import rewrite_traceback_stack</pre>
+<pre class="line before"><span class="ws"></span> </pre>
+<pre class="line current"><span class="ws">        </span>raise rewrite_traceback_stack(source=source)
+<span class="ws">        </span>^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>def join_path(self, template: str, parent: str) -&gt; str:</pre>
+<pre class="line after"><span class="ws">        </span>&#34;&#34;&#34;Join a template with the parent.  By default all the lookups are</pre>
+<pre class="line after"><span class="ws">        </span>relative to the loader root so this method returns the `template`</pre>
+<pre class="line after"><span class="ws">        </span>parameter unchanged, but if the paths should be relative to the</pre></div>
+</div>
+
+<li><div class="frame" id="frame-2299362695008">
+  <h4>File <cite class="filename">"D:\peersphere\app\templates\auth\register.html"</cite>,
+      line <em class="line">1</em>,
+      in <code class="function">top-level template code</code></h4>
+  <div class="source "><pre class="line current"><span class="ws"></span>{% extends &#34;base.html&#34; %}</pre>
+<pre class="line after"><span class="ws"></span>{% block title %}Register — PeerSphere{% endblock %}</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws"></span>{% block content %}</pre>
+<pre class="line after"><span class="ws"></span>&lt;div class=&#34;auth-wrapper&#34;&gt;</pre>
+<pre class="line after"><span class="ws">    </span>&lt;div class=&#34;auth-container&#34;&gt;</pre></div>
+</div>
+
+<li><div class="frame" id="frame-2299362695168">
+  <h4>File <cite class="filename">"D:\peersphere\venv\Lib\site-packages\jinja2\environment.py"</cite>,
+      line <em class="line">942</em>,
+      in <code class="function">handle_exception</code></h4>
+  <div class="source library"><pre class="line before"><span class="ws">        </span>&#34;&#34;&#34;Exception handling helper.  This is used internally to either raise</pre>
+<pre class="line before"><span class="ws">        </span>rewritten exceptions or return a rendered traceback for the template.</pre>
+<pre class="line before"><span class="ws">        </span>&#34;&#34;&#34;</pre>
+<pre class="line before"><span class="ws">        </span>from .debug import rewrite_traceback_stack</pre>
+<pre class="line before"><span class="ws"></span> </pre>
+<pre class="line current"><span class="ws">        </span>raise rewrite_traceback_stack(source=source)
+<span class="ws">        </span>^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</pre>
+<pre class="line after"><span class="ws"></span> </pre>
+<pre class="line after"><span class="ws">    </span>def join_path(self, template: str, parent: str) -&gt; str:</pre>
+<pre class="line after"><span class="ws">        </span>&#34;&#34;&#34;Join a template with the parent.  By default all the lookups are</pre>
+<pre class="line after"><span class="ws">        </span>relative to the loader root so this method returns the `template`</pre>
+<pre class="line after"><span class="ws">        </span>parameter unchanged, but if the paths should be relative to the</pre></div>
+</div>
+
+<li><div class="frame" id="frame-2299362695648">
+  <h4>File <cite class="filename">"D:\peersphere\app\templates\base.html"</cite>,
+      line <em class="line">153</em>,
+      in <code class="function">template</code></h4>
+  <div class="source "><pre class="line before"><span class="ws"></span> </pre>
+<pre class="line before"><span class="ws">    </span>&lt;!-- Bootstrap JS --&gt;</pre>
+<pre class="line before"><span class="ws">    </span>&lt;script src=&#34;https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js&#34;&gt;&lt;/script&gt;</pre>
+<pre class="line before"><span class="ws">    </span>&lt;!-- Custom JS --&gt;</pre>
+<pre class="line before"><span class="ws">    </span>&lt;script src=&#34;{{ url_for(&#39;static&#39;, filename=&#39;js/app.js&#39;) }}&#34;&gt;&lt;/script&gt;</pre>
+<pre class="line current"><span class="ws">    </span>{% block extra_js %}{% endblock %}</pre>
+<pre class="line after"><span class="ws"></span>&lt;/body&gt;</pre>
+<pre class="line after"><span class="ws"></span>&lt;/html&gt;</pre></div>
+</div>
+</ul>
+  <blockquote>jinja2.exceptions.TemplateSyntaxError: Unexpected end of template. Jinja was looking for the following tags: &#39;elif&#39; or &#39;else&#39; or &#39;endif&#39;. The innermost block that needs to be closed is &#39;if&#39;.
+</blockquote>
+</div>
+
+<div class="plain">
+    <p>
+      This is the Copy/Paste friendly version of the traceback.
+    </p>
+    <textarea cols="50" rows="10" name="code" readonly>Traceback (most recent call last):
+  File &#34;D:\peersphere\venv\Lib\site-packages\flask\app.py&#34;, line 1478, in __call__
+    return self.wsgi_app(environ, start_response)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File &#34;D:\peersphere\venv\Lib\site-packages\flask\app.py&#34;, line 1458, in wsgi_app
+    response = self.handle_exception(e)
+  File &#34;D:\peersphere\venv\Lib\site-packages\flask\app.py&#34;, line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+  File &#34;D:\peersphere\venv\Lib\site-packages\flask\app.py&#34;, line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File &#34;D:\peersphere\venv\Lib\site-packages\flask\app.py&#34;, line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+  File &#34;D:\peersphere\venv\Lib\site-packages\flask\app.py&#34;, line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File &#34;D:\peersphere\app\routes\auth.py&#34;, line 62, in register
+    return render_template(&#39;auth/register.html&#39;)
+  File &#34;D:\peersphere\venv\Lib\site-packages\flask\templating.py&#34;, line 152, in render_template
+    return _render(app, template, context)
+  File &#34;D:\peersphere\venv\Lib\site-packages\flask\templating.py&#34;, line 133, in _render
+    rv = template.render(context)
+  File &#34;D:\peersphere\venv\Lib\site-packages\jinja2\environment.py&#34;, line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File &#34;D:\peersphere\venv\Lib\site-packages\jinja2\environment.py&#34;, line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File &#34;D:\peersphere\app\templates\auth\register.html&#34;, line 1, in top-level template code
+    {% extends &#34;base.html&#34; %}
+  File &#34;D:\peersphere\venv\Lib\site-packages\jinja2\environment.py&#34;, line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File &#34;D:\peersphere\app\templates\base.html&#34;, line 153, in template
+    {% block extra_js %}{% endblock %}
+    ^^^^^^^^^^^^^^^^^^^^^
+jinja2.exceptions.TemplateSyntaxError: Unexpected end of template. Jinja was looking for the following tags: &#39;elif&#39; or &#39;else&#39; or &#39;endif&#39;. The innermost block that needs to be closed is &#39;if&#39;.
+</textarea>
+</div>
+<div class="explanation">
+  The debugger caught an exception in your WSGI application.  You can now
+  look at the traceback which led to the error.  <span class="nojavascript">
+  If you enable JavaScript you can also use additional features such as code
+  execution (if the evalex feature is enabled), automatic pasting of the
+  exceptions and much more.</span>
+</div>
+      <div class="footer">
+        Brought to you by <strong class="arthur">DON'T PANIC</strong>, your
+        friendly Werkzeug powered traceback interpreter.
+      </div>
+    </div>
+
+    <div class="pin-prompt">
+      <div class="inner">
+        <h3>Console Locked</h3>
+        <p>
+          The console is locked and needs to be unlocked by entering the PIN.
+          You can find the PIN printed out on the standard output of your
+          shell that runs the server.
+        <form>
+          <p>PIN:
+            <input type=text name=pin size=14>
+            <input type=submit name=btn value="Confirm Pin">
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
+
+<!--
+
+Traceback (most recent call last):
+  File "D:\peersphere\venv\Lib\site-packages\flask\app.py", line 1478, in __call__
+    return self.wsgi_app(environ, start_response)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\peersphere\venv\Lib\site-packages\flask\app.py", line 1458, in wsgi_app
+    response = self.handle_exception(e)
+  File "D:\peersphere\venv\Lib\site-packages\flask\app.py", line 1455, in wsgi_app
+    response = self.full_dispatch_request()
+  File "D:\peersphere\venv\Lib\site-packages\flask\app.py", line 869, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "D:\peersphere\venv\Lib\site-packages\flask\app.py", line 867, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "D:\peersphere\venv\Lib\site-packages\flask\app.py", line 852, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "D:\peersphere\app\routes\auth.py", line 62, in register
+    return render_template('auth/register.html')
+  File "D:\peersphere\venv\Lib\site-packages\flask\templating.py", line 152, in render_template
+    return _render(app, template, context)
+  File "D:\peersphere\venv\Lib\site-packages\flask\templating.py", line 133, in _render
+    rv = template.render(context)
+  File "D:\peersphere\venv\Lib\site-packages\jinja2\environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "D:\peersphere\venv\Lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "D:\peersphere\app\templates\auth\register.html", line 1, in top-level template code
+    {% extends "base.html" %}
+  File "D:\peersphere\venv\Lib\site-packages\jinja2\environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "D:\peersphere\app\templates\base.html", line 153, in template
+    {% block extra_js %}{% endblock %}
+    ^^^^^^^^^^^^^^^^^^^^^
+jinja2.exceptions.TemplateSyntaxError: Unexpected end of template. Jinja was looking for the following tags: 'elif' or 'else' or 'endif'. The innermost block that needs to be closed is 'if'.
+
+
+-->

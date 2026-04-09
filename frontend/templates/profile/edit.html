@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Edit Profile — PeerSphere{% endblock %}
+
+{% block content %}
+<div class="settings-layout">
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card-glass">
+                <h5 class="card-glass-title"><i class="bi bi-person-gear me-2"></i>Edit Profile</h5>
+                <form method="POST" action="{{ url_for('profile.edit') }}" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <!-- Avatar Preview -->
+                    <div class="edit-avatar-section">
+                        <div class="edit-avatar-preview" id="avatarPreviewWrap">
+                            <img id="avatarPreviewImg" src="{{ url_for('static', filename='uploads/' + current_user.profile_picture) if current_user.profile_picture != 'default.png' else url_for('static', filename='img/default-avatar.svg') }}" alt="avatar">
+                        </div>
+                        <div class="edit-avatar-info">
+                            <div class="avatar-name">{{ current_user.name }}</div>
+                            <div class="avatar-hint">JPG, PNG or SVG · Max 16 MB</div>
+                            <label class="btn btn-outline-primary btn-sm" style="cursor:pointer;">
+                                <i class="bi bi-camera me-1"></i>Change Photo
+                                <input type="file" name="profile_picture" accept="image/*" hidden onchange="previewAvatar(this)">
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label-custom">Full Name</label>
+                        <input type="text" name="name" class="form-control-modern" value="{{ current_user.name }}">
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label-custom">University</label>
+                            <input type="text" name="university" class="form-control-modern" value="{{ current_user.university or '' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label-custom">Department</label>
+                            <input type="text" name="department" class="form-control-modern" value="{{ current_user.department or '' }}">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label-custom">Graduation Year</label>
+                        <input type="number" name="graduation_year" class="form-control-modern" value="{{ current_user.graduation_year or '' }}" min="2000" max="2035">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label-custom">Bio</label>
+                        <textarea name="bio" class="form-control-modern" rows="3" placeholder="Tell us about yourself...">{{ current_user.bio or '' }}</textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Save Changes</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Skills Management -->
+            <div class="card-glass">
+                <h6 class="card-glass-title"><i class="bi bi-lightning-fill me-2"></i>My Skills</h6>
+
+                <div class="skills-container mb-3">
+                    {% for us in current_user.skills.all() %}
+                    <div class="skill-pill-removable">
+                        <span>{{ us.skill.skill_name }}</span>
+                        <form method="POST" action="{{ url_for('profile.remove_skill', skill_id=us.skill_id) }}" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="skill-remove-btn"><i class="bi bi-x"></i></button>
+                        </form>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <form method="POST" action="{{ url_for('profile.add_skill') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="mb-2">
+                        <select name="skill_id" class="form-control-modern">
+                            <option value="">Select an existing skill...</option>
+                            {% for skill in all_skills %}
+                                {% if skill.id not in user_skill_ids %}
+                                <option value="{{ skill.id }}">{{ skill.skill_name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <input type="text" name="new_skill" class="form-control-modern" placeholder="Or type a new skill...">
+                    </div>
+                    <button type="submit" class="btn btn-outline-primary btn-sm w-100"><i class="bi bi-plus me-1"></i>Add Skill</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+function previewAvatar(input) {
+    if (!input.files || !input.files[0]) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        document.getElementById('avatarPreviewImg').src = e.target.result;
+    };
+    reader.readAsDataURL(input.files[0]);
+}
+</script>
+{% endblock %}
+{% endblock %}

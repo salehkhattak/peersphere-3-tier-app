@@ -1,0 +1,325 @@
+{% extends "base.html" %}
+{% block title %}Messages — PeerSphere{% endblock %}
+
+{% block content %}
+
+<style>
+    /* Layout */
+    .messages-layout {
+        display: flex;
+        height: 90vh;
+        background: #f5f7fb;
+        border-radius: 16px;
+        overflow: hidden;
+    }
+
+    /* Sidebar */
+    .messages-sidebar {
+        width: 320px;
+        background: white;
+        border-right: 1px solid #eee;
+    }
+
+    .messages-sidebar-header {
+        padding: 16px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .conversation-item {
+        display: flex;
+        padding: 14px;
+        gap: 12px;
+        transition: 0.2s;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .conversation-item:hover {
+        background: #f2f4f8;
+    }
+
+    .conversation-item.active {
+        background: #e9f2ff;
+    }
+
+    .conversation-avatar img {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+    }
+
+    /* Chat Area */
+    .chat-area {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .chat-header {
+        padding: 14px;
+        border-bottom: 1px solid #eee;
+        background: white;
+    }
+
+    .chat-header-user {
+        display: flex;
+        gap: 10px;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .chat-header-avatar img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+    }
+
+    /* Messages */
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+    }
+
+    .message-wrapper {
+        margin-bottom: 12px;
+    }
+
+    .message-bubble {
+        padding: 12px 16px;
+        border-radius: 18px;
+        max-width: 60%;
+        position: relative;
+    }
+
+    .sent {
+        background: #3b82f6;
+        color: white;
+        margin-left: auto;
+    }
+
+    .received {
+        background: white;
+        border: 1px solid #eee;
+    }
+
+    .message-time {
+        font-size: 11px;
+        opacity: 0.6;
+        margin-top: 4px;
+    }
+
+    /* Reactions */
+    .message-reactions {
+        margin-top: 6px;
+    }
+
+    .reaction {
+        cursor: pointer;
+        margin-right: 6px;
+        font-size: 16px;
+    }
+
+    .reaction.active {
+        transform: scale(1.3);
+    }
+
+    /* Input */
+    .chat-input-area {
+        padding: 12px;
+        border-top: 1px solid #eee;
+        background: white;
+    }
+
+    .chat-input-form {
+        display: flex;
+        gap: 8px;
+    }
+
+    .chat-input {
+        flex: 1;
+        padding: 10px 14px;
+        border-radius: 12px;
+        border: 1px solid #ddd;
+    }
+
+    .chat-send-btn {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        padding: 10px 16px;
+        border-radius: 12px;
+    }
+
+    /* Sticker */
+    .sticker-btn {
+        border: none;
+        background: #f1f1f1;
+        border-radius: 10px;
+        padding: 8px 10px;
+    }
+
+    .sticker-panel {
+        display: none;
+        padding: 10px;
+        background: white;
+        border-top: 1px solid #eee;
+    }
+
+    .sticker-panel.show {
+        display: flex;
+        gap: 10px;
+    }
+
+    .sticker-panel span {
+        font-size: 24px;
+        cursor: pointer;
+    }
+</style>
+
+
+<div class="messages-layout">
+
+    <!-- Sidebar -->
+    <div class="messages-sidebar">
+
+        <div class="messages-sidebar-header">
+            <h5><i class="bi bi-chat-dots me-2"></i>Messages</h5>
+        </div>
+
+        <div class="conversations-list">
+            {% for conv in conversations %}
+            <a href="{{ url_for('messages.chat', user_id=conv.user.id) }}"
+                class="conversation-item {{ 'active' if active_chat and active_chat.id == conv.user.id }}">
+
+                <div class="conversation-avatar">
+                    <img
+                        src="{{ url_for('static', filename='uploads/' + conv.user.profile_picture) if conv.user.profile_picture != 'default.png' else url_for('static', filename='img/default-avatar.svg') }}">
+                </div>
+
+                <div>
+                    <div><b>{{ conv.user.name }}</b></div>
+                    <small>
+                        {% if conv.last_message %}
+                        {{ conv.last_message.message_text[:30] }}...
+                        {% endif %}
+                    </small>
+                </div>
+
+            </a>
+            {% endfor %}
+        </div>
+
+    </div>
+
+
+    <!-- Chat Area -->
+    <div class="chat-area">
+
+        {% if active_chat %}
+
+        <div class="chat-header">
+            <a href="{{ url_for('profile.view', user_id=active_chat.id) }}" class="chat-header-user">
+                <div class="chat-header-avatar">
+                    <img
+                        src="{{ url_for('static', filename='uploads/' + active_chat.profile_picture) if active_chat.profile_picture != 'default.png' else url_for('static', filename='img/default-avatar.svg') }}">
+                </div>
+                <div>
+                    <b>{{ active_chat.name }}</b><br>
+                    <small class="text-muted">{{ active_chat.department or active_chat.role }}</small>
+                </div>
+            </a>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+
+            {% for msg in messages %}
+            <div class="message-wrapper">
+
+                <div class="message-bubble {{ 'sent' if msg.sender_id == current_user.id else 'received' }}">
+
+                    <div>{{ msg.message_text }}</div>
+
+                    <div class="message-time">
+                        {{ msg.timestamp.strftime('%I:%M %p') }}
+                    </div>
+
+                    <!-- Reactions -->
+                    <div class="message-reactions">
+                        <span class="reaction" onclick="toggleReaction(this)">👍</span>
+                        <span class="reaction" onclick="toggleReaction(this)">❤️</span>
+                        <span class="reaction" onclick="toggleReaction(this)">😂</span>
+                    </div>
+
+                </div>
+
+            </div>
+            {% endfor %}
+
+        </div>
+
+        <!-- Input -->
+        <div class="chat-input-area">
+
+            <form method="POST" action="{{ url_for('messages.chat', user_id=active_chat.id) }}" class="chat-input-form">
+
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <button type="button" class="sticker-btn" onclick="toggleSticker()">🧩</button>
+
+                <input type="text" name="message_text" class="chat-input" placeholder="Type a message..." required>
+
+                <button type="submit" class="chat-send-btn">
+                    <i class="bi bi-send-fill"></i>
+                </button>
+
+            </form>
+
+            <!-- Sticker Panel -->
+            <div id="stickerPanel" class="sticker-panel">
+                <span onclick="sendSticker('😀')">😀</span>
+                <span onclick="sendSticker('🔥')">🔥</span>
+                <span onclick="sendSticker('🎉')">🎉</span>
+                <span onclick="sendSticker('🚀')">🚀</span>
+                <span onclick="sendSticker('💯')">💯</span>
+            </div>
+
+        </div>
+
+        {% else %}
+        <div class="chat-empty text-center">
+            <h4>Select a chat</h4>
+        </div>
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+
+    // Auto scroll
+    const chat = document.getElementById("chatMessages");
+    if (chat) chat.scrollTop = chat.scrollHeight;
+
+    // Reaction toggle
+    function toggleReaction(el) {
+        el.classList.toggle("active");
+    }
+
+    // Sticker panel
+    function toggleSticker() {
+        document.getElementById("stickerPanel").classList.toggle("show");
+    }
+
+    // Send sticker
+    function sendSticker(sticker) {
+        document.querySelector(".chat-input").value = sticker;
+    }
+
+</script>
+{% endblock %}

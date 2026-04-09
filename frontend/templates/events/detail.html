@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}{{ event.title }} — PeerSphere{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card-glass">
+            <div class="event-detail-header" style="background: linear-gradient(135deg, #667eea, #764ba2); padding: 2rem; border-radius: var(--radius-lg) var(--radius-lg) 0 0; color: white;">
+                <span class="event-type-badge">{{ event.event_type|capitalize }}</span>
+                <h2 class="mt-2 mb-1">{{ event.title }}</h2>
+                <div class="d-flex gap-3 flex-wrap mt-2" style="opacity: 0.9;">
+                    <span><i class="bi bi-calendar3 me-1"></i>{{ event.date.strftime('%B %d, %Y • %I:%M %p') }}</span>
+                    <span><i class="bi bi-geo-alt me-1"></i>{{ event.location }}</span>
+                    <span><i class="bi bi-person me-1"></i>by {{ event.organizer.name }}</span>
+                </div>
+            </div>
+            <div class="p-4">
+                <p>{{ event.description }}</p>
+                <div class="d-flex align-items-center gap-3 mt-4">
+                    <span class="text-muted"><i class="bi bi-people-fill me-1"></i>{{ event.attendee_count() }} attending</span>
+                    {% if is_attending %}
+                    <form method="POST" action="{{ url_for('events.leave', event_id=event.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-outline-danger btn-sm"><i class="bi bi-x-lg me-1"></i>Leave Event</button>
+                    </form>
+                    {% else %}
+                    <form method="POST" action="{{ url_for('events.join', event_id=event.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-check-lg me-1"></i>Join Event</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Attendees -->
+        <div class="card-glass mt-4">
+            <h6 class="card-glass-title"><i class="bi bi-people me-2"></i>Attendees ({{ event.attendee_count() }})</h6>
+            <div class="row g-3">
+                {% for user in attendees %}
+                <div class="col-6 col-md-4">
+                    <a href="{{ url_for('profile.view', user_id=user.id) }}" class="attendee-card">
+                        <div class="suggestion-avatar">
+                            <img src="{{ url_for('static', filename='uploads/' + user.profile_picture) if user.profile_picture != 'default.png' else url_for('static', filename='img/default-avatar.svg') }}" alt="avatar" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                        </div>
+                        <div class="sidebar-item-name">{{ user.name }}</div>
+                        <small class="text-muted">{{ user.department or '' }}</small>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

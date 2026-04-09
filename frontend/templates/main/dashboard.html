@@ -1,0 +1,356 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — PeerSphere{% endblock %}
+
+{% block content %}
+<div class="dashboard-layout py-3">
+
+    <!-- Left Sidebar -->
+    <aside class="dashboard-sidebar">
+        <!-- Profile Card -->
+        <div class="card-glass profile-card animate-slide-up">
+            <div class="profile-card-header">
+                <div class="profile-card-avatar">
+                    <img src="{{ url_for('static', filename='uploads/' + current_user.profile_picture) if current_user.profile_picture != 'default.png' else url_for('static', filename='img/default-avatar.svg') }}" alt="avatar">
+                </div>
+                <div class="profile-card-name">
+                    {{ current_user.name }}
+                    {% if current_user.is_verified %}<i class="bi bi-patch-check-fill text-primary ms-1" style="font-size:0.85rem;"></i>{% endif %}
+                </div>
+                <div class="profile-card-handle">@{{ current_user.username }}</div>
+                {% if current_user.streak_count > 0 %}
+                <div class="mt-2"><span class="streak-badge">🔥 {{ current_user.streak_count }} day streak</span></div>
+                {% endif %}
+            </div>
+
+            <div class="profile-card-stats">
+                <div class="stat-item">
+                    <span class="stat-value">{{ current_user.posts.count() }}</span>
+                    <span class="stat-label">Posts</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">{{ current_user.communities|length }}</span>
+                    <span class="stat-label">Groups</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">{{ current_user.profile_completion() }}%</span>
+                    <span class="stat-label">Profile</span>
+                </div>
+            </div>
+
+            <div class="profile-card-footer">
+                <a href="{{ url_for('profile.view', user_id=current_user.id) }}" class="btn btn-outline-primary btn-sm">View Profile</a>
+                <a href="{{ url_for('profile.edit') }}" class="btn btn-light btn-sm">Edit</a>
+            </div>
+        </div>
+
+        <!-- Profile Views Teaser -->
+        <div class="profile-views-teaser animate-slide-up-delay">
+            <span style="font-size:1.4rem;">👀</span>
+            <div>
+                <div style="font-size:0.8rem;opacity:0.85;">Profile views this week</div>
+                <div style="font-weight:800;font-size:1.1rem;">{{ (current_user.id * 7) % 47 + 12 }} people</div>
+            </div>
+            <a href="{{ url_for('profile.view', user_id=current_user.id) }}" class="btn btn-sm ms-auto" style="background:rgba(255,255,255,0.2);color:white;border:none;font-size:0.75rem;">Upgrade →</a>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="card-glass animate-slide-up-delay">
+            <div class="card-glass-header"><h6>🔗 Quick Links</h6></div>
+            <a href="{{ url_for('communities.index') }}" class="sidebar-item text-decoration-none">
+                <div class="sidebar-item-icon" style="background:linear-gradient(135deg,#6C5CE7,#A29BFE);"><i class="bi bi-people-fill"></i></div>
+                <span class="sidebar-item-name">Communities</span>
+            </a>
+            <a href="{{ url_for('events.index') }}" class="sidebar-item text-decoration-none">
+                <div class="sidebar-item-icon" style="background:linear-gradient(135deg,#00B894,#55EFC4);"><i class="bi bi-calendar-event-fill"></i></div>
+                <span class="sidebar-item-name">Events</span>
+            </a>
+            <a href="{{ url_for('mentors.index') }}" class="sidebar-item text-decoration-none">
+                <div class="sidebar-item-icon" style="background:linear-gradient(135deg,#FDCB6E,#E17055);"><i class="bi bi-mortarboard-fill"></i></div>
+                <span class="sidebar-item-name">Mentorship</span>
+            </a>
+            <a href="{{ url_for('messages.index') }}" class="sidebar-item text-decoration-none">
+                <div class="sidebar-item-icon" style="background:linear-gradient(135deg,#E84393,#FD79A8);"><i class="bi bi-chat-dots-fill"></i></div>
+                <span class="sidebar-item-name">Messages</span>
+            </a>
+            <a href="{{ url_for('feed.index') }}" class="sidebar-item text-decoration-none">
+                <div class="sidebar-item-icon" style="background:linear-gradient(135deg,#0984E3,#74B9FF);"><i class="bi bi-grid-fill"></i></div>
+                <span class="sidebar-item-name">Explore Feed</span>
+            </a>
+        </div>
+
+        <!-- Trending Topics -->
+        <div class="card-glass animate-slide-up-delay-2">
+            <div class="card-glass-header"><h6>📈 Trending</h6></div>
+            <div class="trending-item"><span class="trending-tag">#CampusInnovation</span><span class="trending-count">1.4k posts</span></div>
+            <div class="trending-item"><span class="trending-tag">#Hackathon2025</span><span class="trending-count">850 posts</span></div>
+            <div class="trending-item"><span class="trending-tag">#BuildInPublic</span><span class="trending-count">421 posts</span></div>
+            <div class="trending-item"><span class="trending-tag">#CareerGrowth</span><span class="trending-count">312 posts</span></div>
+        </div>
+    </aside>
+
+    <!-- Main Feed -->
+    <div class="dashboard-main">
+
+        <!-- Stories Bar -->
+        {% if story_users %}
+        <div class="stories-bar mb-3 animate-fade-in">
+            <div class="story-item" onclick="document.getElementById('storyCreateModal').style.display='flex'">
+                <div class="story-ring add-story"><i class="bi bi-plus-lg"></i></div>
+                <span class="story-name">Your Story</span>
+            </div>
+            {% for uid, data in story_users.items() %}
+            <div class="story-item" onclick="openStory('{{ url_for('static', filename='uploads/' + data.user.profile_picture) if data.user.profile_picture != 'default.png' else url_for('static', filename='img/default-avatar.svg') }}', '{{ data.user.name }}', '{{ data.stories[0].text_content or '' }}', '{{ data.stories[0].bg_gradient }}', '{{ data.stories[0].image_url or '' }}')">
+                <div class="story-ring {% if not data.has_unviewed %}viewed{% endif %}">
+                    <img src="{{ url_for('static', filename='uploads/' + data.user.profile_picture) if data.user.profile_picture != 'default.png' else url_for('static', filename='img/default-avatar.svg') }}" alt="{{ data.user.name }}">
+                </div>
+                <span class="story-name">{{ data.user.name.split(' ')[0] }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Create Post -->
+        <div class="card-glass create-post-card animate-slide-up">
+            <form method="POST" action="{{ url_for('feed.create_post') }}" enctype="multipart/form-data">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="create-post-top">
+                    <div class="create-post-avatar">
+                        <img src="{{ url_for('static', filename='uploads/' + current_user.profile_picture) if current_user.profile_picture != 'default.png' else url_for('static', filename='img/default-avatar.svg') }}" alt="avatar">
+                    </div>
+                    <textarea name="content" class="create-post-input" placeholder="What's on your mind, {{ current_user.name.split(' ')[0] }}? ✨" rows="2" required></textarea>
+                </div>
+                <div class="create-post-actions">
+                    <div class="d-flex gap-1">
+                        <label class="create-post-btn">
+                            <i class="bi bi-image" style="color:#00B894;"></i><span>Photo</span>
+                            <input type="file" name="image" accept="image/*" hidden>
+                        </label>
+                        <button type="button" class="create-post-btn"><i class="bi bi-bar-chart-line" style="color:var(--primary);"></i><span>Poll</span></button>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm px-4"><i class="bi bi-send-fill me-1"></i>Post</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Posts -->
+        {% if posts %}
+        {% for post in posts %}
+        <div class="card-glass post-card animate-slide-up">
+            <div class="post-header">
+                <a href="{{ url_for('profile.view', user_id=post.author.id) }}" class="post-author-link text-decoration-none">
+                    <div class="post-avatar {% if post.author.id in story_users %}has-story{% endif %}">
+                        <img src="{{ url_for('static', filename='uploads/' + post.author.profile_picture) if post.author.profile_picture != 'default.png' else url_for('static', filename='img/default-avatar.svg') }}" alt="avatar">
+                    </div>
+                    <div>
+                        <div class="d-flex align-items-center">
+                            <span class="post-author-name">{{ post.author.name }}</span>
+                            {% if post.author.is_verified %}<i class="bi bi-patch-check-fill verified-badge"></i>{% endif %}
+                        </div>
+                        <div class="post-meta">@{{ post.author.username }} · {{ post.created_at.strftime('%b %d') }}</div>
+                    </div>
+                </a>
+                <button class="btn btn-link text-muted ms-auto p-1"><i class="bi bi-three-dots"></i></button>
+            </div>
+
+            <div class="post-content pt-0">
+                <p class="mb-2">{{ post.content }}</p>
+            </div>
+
+            {% if post.image_url %}
+            <div class="post-image mb-2" ondblclick="doubleTapLike({{ post.id }}, this)">
+                <img src="{{ url_for('static', filename='uploads/' + post.image_url) }}" alt="post image" loading="lazy">
+                <span class="double-tap-heart" id="heart-{{ post.id }}">❤️</span>
+            </div>
+            {% endif %}
+
+            <div class="post-actions border-top pt-2 mt-2">
+                <form method="POST" action="{{ url_for('feed.like_post', post_id=post.id) }}" class="d-inline m-0 like-form" data-post-id="{{ post.id }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="post-action-btn {% if post.is_liked_by(current_user) %}liked{% endif %}" id="like-btn-{{ post.id }}">
+                        <i class="bi {% if post.is_liked_by(current_user) %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+                    </button>
+                </form>
+                <button class="post-action-btn" onclick="toggleComments({{ post.id }})"><i class="bi bi-chat"></i></button>
+                <button class="post-action-btn"><i class="bi bi-send"></i></button>
+                <form method="POST" action="{{ url_for('feed.bookmark_post', post_id=post.id) }}" class="d-inline m-0 ms-auto">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="post-action-btn {% if post.is_bookmarked_by(current_user) %}bookmarked{% endif %}" title="{% if post.is_bookmarked_by(current_user) %}Saved{% else %}Save{% endif %}">
+                        <i class="bi {% if post.is_bookmarked_by(current_user) %}bi-bookmark-fill{% else %}bi-bookmark{% endif %}"></i>
+                    </button>
+                </form>
+            </div>
+
+            <div class="post-stats mt-1">
+                {% if post.like_count() > 0 %}<span class="text-dark fw-bold" style="font-size:0.85rem;">{{ post.like_count() }} like{{ 's' if post.like_count() != 1 }}</span>
+                {% else %}<span style="font-weight:400;color:var(--text-muted);font-size:0.85rem;">Be the first to like this ✨</span>{% endif %}
+            </div>
+
+            <div class="px-3 pb-1">
+                {% if post.comment_count() > 0 %}
+                <div style="font-size:0.82rem;color:var(--text-muted);cursor:pointer;" onclick="toggleComments({{ post.id }})">View all {{ post.comment_count() }} comments</div>
+                {% endif %}
+                <div class="mt-1" style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">{{ post.created_at.strftime('%B %d, %Y') }}</div>
+            </div>
+
+            <div class="post-comments" id="comments-{{ post.id }}" style="display:none;">
+                {% for comment in post.recent_comments(3) %}
+                <div class="comment-item">
+                    <div class="comment-avatar">
+                        <img src="{{ url_for('static', filename='uploads/' + comment.author.profile_picture) if comment.author.profile_picture != 'default.png' else url_for('static', filename='img/default-avatar.svg') }}" alt="avatar">
+                    </div>
+                    <div class="comment-body">
+                        <a href="{{ url_for('profile.view', user_id=comment.author.id) }}" class="comment-author text-decoration-none">{{ comment.author.name }}</a>
+                        <span class="comment-text">{{ comment.comment_text }}</span>
+                        <small class="comment-time">{{ comment.created_at.strftime('%b %d, %I:%M %p') }}</small>
+                    </div>
+                </div>
+                {% endfor %}
+                <form method="POST" action="{{ url_for('feed.comment_post', post_id=post.id) }}" class="comment-form mt-2">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="comment-input-wrapper">
+                        <input type="text" name="comment_text" class="comment-input" placeholder="Add a comment..." required>
+                        <button type="submit" class="comment-submit"><i class="bi bi-send-fill"></i></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="card-glass text-center py-5 animate-fade-in">
+            <div style="font-size:3rem;">🌟</div>
+            <h5 class="mt-3">Your feed is empty!</h5>
+            <p class="text-muted">Join communities and connect with peers to see posts here.</p>
+            <a href="{{ url_for('communities.index') }}" class="btn btn-primary">Explore Communities</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Right Sidebar -->
+    <aside class="dashboard-sidebar-right">
+        <!-- Upcoming Events -->
+        <div class="card-glass animate-slide-up">
+            <div class="card-glass-header">
+                <h6>📅 Upcoming Events</h6>
+                <a href="{{ url_for('events.index') }}" class="small text-muted text-decoration-none">See All</a>
+            </div>
+            {% if upcoming_events %}
+            {% for event in upcoming_events %}
+            <div class="event-item-mini">
+                <div class="event-date-mini">
+                    <span class="month">{{ event.date.strftime('%b') }}</span>
+                    <span class="day">{{ event.date.strftime('%d') }}</span>
+                </div>
+                <div>
+                    <div class="fw-600" style="font-size:0.85rem;">{{ event.title }}</div>
+                    <div class="text-muted" style="font-size:0.75rem;">{{ event.location or 'Online' }}</div>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <p class="text-muted small py-2 mb-0">No upcoming events. <a href="{{ url_for('events.index') }}">Create one!</a></p>
+            {% endif %}
+        </div>
+
+        <!-- Suggested Communities -->
+        <div class="card-glass animate-slide-up-delay">
+            <div class="card-glass-header">
+                <h6>🏘️ Suggested Communities</h6>
+                <a href="{{ url_for('communities.index') }}" class="small text-muted text-decoration-none">Explore</a>
+            </div>
+            {% for community in trending_communities[:4] %}
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <div class="suggested-avatar">
+                    <img src="{{ url_for('static', filename='img/default-community.svg') }}" alt="community">
+                </div>
+                <div class="flex-grow-1" style="min-width:0;">
+                    <div class="fw-700" style="font-size:0.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ community.name }}</div>
+                    <div class="text-muted" style="font-size:0.72rem;">{{ community.member_count() }} members</div>
+                </div>
+                <a href="{{ url_for('communities.detail', community_id=community.id) }}" class="btn btn-sm btn-outline-primary" style="font-size:0.75rem;padding:0.2rem 0.6rem;white-space:nowrap;">Join</a>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Achievement Badges -->
+        <div class="card-glass animate-slide-up-delay-2">
+            <div class="card-glass-header"><h6>🏆 Your Achievements</h6></div>
+            <div class="d-flex flex-wrap gap-2">
+                {% if current_user.posts.count() >= 1 %}
+                <span title="First Post!" style="font-size:1.5rem;cursor:default;" data-bs-toggle="tooltip" data-bs-title="First Post!">✍️</span>
+                {% endif %}
+                {% if current_user.streak_count >= 3 %}
+                <span title="{{ current_user.streak_count }} Day Streak" style="font-size:1.5rem;">🔥</span>
+                {% endif %}
+                {% if current_user.communities|length >= 1 %}
+                <span title="Community Member" style="font-size:1.5rem;">🏘️</span>
+                {% endif %}
+                {% if current_user.profile_completion() >= 80 %}
+                <span title="Profile Pro" style="font-size:1.5rem;">⭐</span>
+                {% endif %}
+                <span title="Early Adopter" style="font-size:1.5rem;">🚀</span>
+            </div>
+            {% if current_user.profile_completion() < 80 %}
+            <div class="mt-2" style="font-size:0.78rem;color:var(--text-muted);">Complete your profile to unlock more!</div>
+            <div class="progress-custom mt-1">
+                <div class="progress-bar-custom" style="width:{{ current_user.profile_completion() }}%;"></div>
+            </div>
+            {% endif %}
+        </div>
+    </aside>
+</div>
+
+<!-- Story Create Modal -->
+<div id="storyCreateModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:10001;align-items:center;justify-content:center;">
+    <div style="background:var(--surface);border-radius:var(--radius-xl);padding:2rem;max-width:420px;width:90%;position:relative;">
+        <button onclick="document.getElementById('storyCreateModal').style.display='none'" style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.3rem;cursor:pointer;">✕</button>
+        <h5 class="fw-800 mb-3">✨ Add Your Story</h5>
+        <form method="POST" action="{{ url_for('stories.create_story') }}" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <textarea name="text_content" class="create-post-input w-100 mb-3" placeholder="What's your story?..." rows="3"></textarea>
+            <div class="mb-3">
+                <label class="form-label-custom">Background Color</label>
+                <div class="d-flex gap-2">
+                    {% for i in range(1, 6) %}
+                    <label style="cursor:pointer;">
+                        <input type="radio" name="bg_gradient" value="gradient-{{ i }}" {% if i == 1 %}checked{% endif %} hidden>
+                        <div class="story-content-wrap gradient-{{ i }}" style="width:36px;height:36px;border-radius:50%;min-height:unset;padding:0;"></div>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Share Story 🚀</button>
+        </form>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+function toggleComments(postId) {
+    const el = document.getElementById('comments-' + postId);
+    el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+function doubleTapLike(postId, container) {
+    const heart = document.getElementById('heart-' + postId);
+    if (!heart) return;
+    heart.classList.remove('animate'); void heart.offsetWidth; heart.classList.add('animate');
+    const likeBtn = document.getElementById('like-btn-' + postId);
+    if (likeBtn && !likeBtn.classList.contains('liked')) {
+        document.querySelector('.like-form[data-post-id="' + postId + '"]').submit();
+    }
+    setTimeout(() => heart.classList.remove('animate'), 900);
+}
+function openStory(avatar, name, text, gradient, imageUrl) {
+    const overlay = document.getElementById('storyModalOverlay');
+    const wrap = document.getElementById('storyContentWrap');
+    const header = document.getElementById('storyHeader');
+    const body = document.getElementById('storyBody');
+    wrap.className = 'story-content-wrap ' + gradient;
+    header.innerHTML = '<img src="' + avatar + '" /><span>' + name + '</span>';
+    body.innerHTML = imageUrl ? '<img src="/static/uploads/' + imageUrl + '" style="max-width:100%;border-radius:8px;"/>' : (text ? '<p>' + text + '</p>' : '<p style="opacity:0.6">No content</p>');
+    overlay.classList.add('active');
+}
+function closeStoryModal(e) { if (e.target === document.getElementById('storyModalOverlay')) closeStoryModalDirect(); }
+function closeStoryModalDirect() { document.getElementById('storyModalOverlay').classList.remove('active'); }
+</script>
+{% endblock %}
+{% endblock %}

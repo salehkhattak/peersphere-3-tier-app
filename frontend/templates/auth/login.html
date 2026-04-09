@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Login — PeerSphere{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-container">
+        <!-- Left panel -->
+        <div class="auth-left">
+            <div class="auth-brand">
+                <i class="bi bi-globe2" style="font-size:1.8rem;"></i>
+                Peer<span class="brand-accent">Sphere</span>
+            </div>
+            <div class="auth-hero-title">Welcome<br>Back! 👋</div>
+            <p class="auth-hero-text">Pick up where you left off. Your campus community is waiting for you.</p>
+            <div class="auth-illustration">
+                <div class="floating-shapes">
+                    <div class="auth-shape shape-circle"></div>
+                    <div class="auth-shape shape-square"></div>
+                    <div class="auth-shape shape-triangle"></div>
+                </div>
+                <div style="position:absolute;bottom:2rem;left:0;right:0;">
+                    <div style="background:rgba(255,255,255,0.15);backdrop-filter:blur(10px);border-radius:16px;padding:1rem 1.25rem;display:flex;align-items:center;gap:0.75rem;border:1px solid rgba(255,255,255,0.2);">
+                        <span style="font-size:2rem;">🔥</span>
+                        <div>
+                            <div style="font-weight:700;font-size:0.9rem;">Streak system live!</div>
+                            <div style="font-size:0.78rem;opacity:0.85;">Log in daily to keep your streak</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right panel -->
+        <div class="auth-right">
+            <div class="auth-form-container">
+                <h2 class="auth-title">Sign In</h2>
+                <p class="auth-subtitle">Continue your university networking journey</p>
+
+                <form method="POST" action="{{ url_for('auth.login') }}" novalidate>
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <div class="form-floating-custom">
+                        <i class="bi bi-envelope field-icon"></i>
+                        <input type="email" name="email" class="form-control-custom" placeholder="University email" required autocomplete="email" value="{{ request.form.get('email', '') }}">
+                    </div>
+
+                    <div class="form-floating-custom" style="position:relative;">
+                        <i class="bi bi-lock field-icon"></i>
+                        <input type="password" name="password" id="loginPassword" class="form-control-custom" placeholder="Password" required autocomplete="current-password">
+                        <button type="button" onclick="togglePwd('loginPassword',this)" style="position:absolute;right:1rem;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);cursor:pointer;"><i class="bi bi-eye"></i></button>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;font-size:0.85rem;color:var(--text-secondary);">
+                            <input type="checkbox" name="remember" style="accent-color:var(--primary);"> Remember me
+                        </label>
+                        <a href="#" style="font-size:0.85rem;color:var(--text-muted);">Forgot password?</a>
+                    </div>
+
+
+
+                    <button type="submit" class="btn-auth-primary">
+                        Sign In <i class="bi bi-arrow-right ms-2"></i>
+                    </button>
+                </form>
+
+                <div class="auth-divider"><span>or continue with</span></div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+                    <button class="btn btn-light fw-600" style="border:1px solid var(--border-color);padding:0.75rem;" disabled>
+                        <i class="bi bi-google me-2" style="color:#EA4335;"></i>Google
+                    </button>
+                    <button class="btn btn-light fw-600" style="border:1px solid var(--border-color);padding:0.75rem;" disabled>
+                        <i class="bi bi-microsoft me-2" style="color:#00A4EF;"></i>Microsoft
+                    </button>
+                </div>
+
+                <div class="auth-switch mt-4">
+                    Don't have an account? <a href="{{ url_for('auth.register') }}">Join PeerSphere ✨</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+function togglePwd(id, btn) {
+    const inp = document.getElementById(id);
+    const show = inp.type === 'password';
+    inp.type = show ? 'text' : 'password';
+    btn.innerHTML = show ? '<i class="bi bi-eye-slash"></i>' : '<i class="bi bi-eye"></i>';
+}
+</script>
+{% endblock %}
+{% endblock %}

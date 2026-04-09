@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}Register — PeerSphere{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-container" style="max-width:1100px;">
+        <!-- Left panel -->
+        <div class="auth-left">
+            <div class="auth-brand">
+                <i class="bi bi-globe2" style="font-size:1.8rem;"></i>
+                Peer<span class="brand-accent">Sphere</span>
+            </div>
+            <div class="auth-hero-title">Join the<br>Community! 🚀</div>
+            <p class="auth-hero-text">Connect with peers, alumni & mentors at your university. Build your future together.</p>
+            <div class="auth-illustration">
+                <div class="floating-shapes">
+                    <div class="auth-shape shape-circle"></div>
+                    <div class="auth-shape shape-square"></div>
+                </div>
+                <div style="position:absolute;bottom:1rem;left:0;right:0;display:flex;flex-direction:column;gap:0.5rem;">
+                    {% for item in [('🎓','Smart Profiles','Showcase your skills & achievements'),('🏘️','Communities','Find your tribe on campus'),('🔥','Daily Streaks','Stay engaged & earn rewards')] %}
+                    <div style="background:rgba(255,255,255,0.1);backdrop-filter:blur(8px);border-radius:12px;padding:0.65rem 1rem;display:flex;align-items:center;gap:0.75rem;border:1px solid rgba(255,255,255,0.15);">
+                        <span style="font-size:1.3rem;">{{ item[0] }}</span>
+                        <div>
+                            <div style="font-weight:700;font-size:0.82rem;">{{ item[1] }}</div>
+                            <div style="font-size:0.72rem;opacity:0.8;">{{ item[2] }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right panel -->
+        <div class="auth-right" style="overflow-y:auto;max-height:100vh;">
+            <div class="auth-form-container">
+                <h2 class="auth-title">Create Account</h2>
+                <p class="auth-subtitle">Start your journey — it's completely free</p>
+
+                <form method="POST" action="{{ url_for('auth.register') }}" novalidate>
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <div class="form-floating-custom">
+                        <i class="bi bi-person field-icon"></i>
+                        <input type="text" name="name" class="form-control-custom" placeholder="Full name" required value="{{ request.form.get('name','') }}">
+                    </div>
+
+                    <div class="form-floating-custom">
+                        <i class="bi bi-envelope field-icon"></i>
+                        <input type="email" name="email" class="form-control-custom" placeholder="University email" required value="{{ request.form.get('email','') }}">
+                    </div>
+
+                    <div class="form-floating-custom" style="position:relative;">
+                        <i class="bi bi-lock field-icon"></i>
+                        <input type="password" name="password" id="regPassword" class="form-control-custom" placeholder="Create password (min 6 chars)" required>
+                        <button type="button" onclick="togglePwd('regPassword',this)" style="position:absolute;right:1rem;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);cursor:pointer;"><i class="bi bi-eye"></i></button>
+                    </div>
+
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1.25rem;">
+                        <div class="form-floating-custom" style="margin-bottom:0;">
+                            <i class="bi bi-mortarboard field-icon"></i>
+                            <select name="role" class="form-control-custom" style="padding-left:2.8rem;appearance:none;cursor:pointer;">
+                                <option value="student" {% if request.form.get('role','student')=='student' %}selected{% endif %}>🎓 Student</option>
+                                <option value="alumni" {% if request.form.get('role')=='alumni' %}selected{% endif %}>👔 Alumni</option>
+                            </select>
+                        </div>
+                        <div class="form-floating-custom" style="margin-bottom:0;">
+                            <i class="bi bi-calendar field-icon"></i>
+                            <input type="number" name="graduation_year" class="form-control-custom" placeholder="Grad year" min="2020" max="2035" value="{{ request.form.get('graduation_year','') }}">
+                        </div>
+                    </div>
+
+                    <div class="form-floating-custom">
+                        <i class="bi bi-building field-icon"></i>
+                        <input type="text" name="university" class="form-control-custom" placeholder="University name" value="{{ request.form.get('university','') }}">
+                    </div>
+
+                    <div class="form-floating-custom">
+                        <i class="bi bi-book field-icon"></i>
+                        <input type="text" name="department" class="form-control-custom" placeholder="Department / Major" value="{{ request.form.get('department','') }}">
+                    </div>
+
+
+
+                    <label style="display:flex;align-items:flex-start;gap:0.75rem;cursor:pointer;font-size:0.83rem;color:var(--text-secondary);margin-bottom:0.5rem;">
+                        <input type="checkbox" required style="margin-top:3px;accent-color:var(--primary);flex-shrink:0;">
+                        I agree to the <a href="#" class="ms-1">Terms of Service</a> &amp; <a href="#">Privacy Policy</a>
+                    </label>
+
+                    <button type="submit" class="btn-auth-primary">
+                        Create Account <i class="bi bi-arrow-right ms-2"></i>
+                    </button>
+                </form>
+
+                <div class="auth-switch mt-3">
+                    Already have an account? <a href="{{ url_for('auth.login') }}">Sign in →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+function togglePwd(id, btn) {
+    const inp = document.getElementById(id);
+    const show = inp.type === 'password';
+    inp.type = show ? 'text' : 'password';
+    btn.innerHTML = show ? '<i class="bi bi-eye-slash"></i>' : '<i class="bi bi-eye"></i>';
+}
+</script>
+{% endblock %}
+{% endblock %}

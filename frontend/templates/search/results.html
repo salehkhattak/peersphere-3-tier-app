@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}Search — PeerSphere{% endblock %}
+
+{% block content %}
+<div class="page-header-section">
+    <h2 class="page-title"><i class="bi bi-search me-2"></i>Search</h2>
+    <form method="GET" action="{{ url_for('search.index') }}" class="mt-3">
+        <div class="search-bar-large">
+            <i class="bi bi-search"></i>
+            <input type="text" name="q" class="search-input-large" placeholder="Search people, communities, events, skills..." value="{{ query }}" autofocus>
+            <button type="submit" class="btn btn-primary btn-sm">Search</button>
+        </div>
+    </form>
+
+    {% if query %}
+    <div class="filter-tabs mt-3">
+        <a href="{{ url_for('search.index', q=query, tab='people') }}" class="filter-tab {{ 'active' if tab == 'people' }}"><i class="bi bi-person"></i> People ({{ users|length }})</a>
+        <a href="{{ url_for('search.index', q=query, tab='communities') }}" class="filter-tab {{ 'active' if tab == 'communities' }}"><i class="bi bi-people"></i> Communities ({{ communities|length }})</a>
+        <a href="{{ url_for('search.index', q=query, tab='events') }}" class="filter-tab {{ 'active' if tab == 'events' }}"><i class="bi bi-calendar"></i> Events ({{ events|length }})</a>
+        <a href="{{ url_for('search.index', q=query, tab='skills') }}" class="filter-tab {{ 'active' if tab == 'skills' }}"><i class="bi bi-lightning"></i> Skills ({{ skills|length }})</a>
+    </div>
+    {% endif %}
+</div>
+
+{% if query %}
+    <!-- People Results -->
+    {% if tab == 'people' %}
+    <div class="row g-3">
+        {% for user in users %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card-glass p-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="suggestion-avatar">
+                        <img src="{{ url_for('static', filename='uploads/' + user.profile_picture) if user.profile_picture != 'default.png' else url_for('static', filename='img/default-avatar.svg') }}" alt="avatar" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                    </div>
+                    <div class="flex-grow-1">
+                        <a href="{{ url_for('profile.view', user_id=user.id) }}" class="suggestion-name">{{ user.name }}</a>
+                        <div class="text-muted small">{{ user.department or '' }} {{ '• ' + user.university if user.university else '' }}</div>
+                        <span class="role-badge-sm role-{{ user.role }}">{{ user.role|capitalize }}</span>
+                    </div>
+                    <a href="{{ url_for('profile.view', user_id=user.id) }}" class="btn btn-outline-primary btn-xs">View</a>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12"><div class="card-glass text-center py-4"><p class="text-muted mb-0">No people found for "{{ query }}"</p></div></div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Communities Results -->
+    {% if tab == 'communities' %}
+    <div class="row g-3">
+        {% for community in communities %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card-glass community-card">
+                <div class="community-card-header" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                    <h6 class="community-card-title mb-0">{{ community.name }}</h6>
+                    <span class="community-member-badge"><i class="bi bi-people"></i> {{ community.member_count() }}</span>
+                </div>
+                <div class="community-card-body">
+                    <p class="community-card-desc">{{ community.description[:80] }}...</p>
+                    <a href="{{ url_for('communities.detail', community_id=community.id) }}" class="btn btn-outline-primary btn-sm">View</a>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12"><div class="card-glass text-center py-4"><p class="text-muted mb-0">No communities found for "{{ query }}"</p></div></div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Events Results -->
+    {% if tab == 'events' %}
+    <div class="row g-3">
+        {% for event in events %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card-glass p-3">
+                <div class="d-flex gap-3">
+                    <div class="event-mini-date">
+                        <span class="event-mini-month">{{ event.date.strftime('%b') }}</span>
+                        <span class="event-mini-day">{{ event.date.strftime('%d') }}</span>
+                    </div>
+                    <div>
+                        <a href="{{ url_for('events.detail', event_id=event.id) }}" class="fw-semibold">{{ event.title }}</a>
+                        <div class="text-muted small"><i class="bi bi-geo-alt"></i> {{ event.location }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12"><div class="card-glass text-center py-4"><p class="text-muted mb-0">No events found for "{{ query }}"</p></div></div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Skills Results -->
+    {% if tab == 'skills' %}
+    <div class="card-glass">
+        <div class="skills-container">
+            {% for skill in skills %}
+            <span class="skill-pill">{{ skill.skill_name }}</span>
+            {% else %}
+            <p class="text-muted text-center py-3 mb-0">No skills found for "{{ query }}"</p>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+{% else %}
+<div class="card-glass text-center py-5 mt-4">
+    <i class="bi bi-search" style="font-size: 3rem; color: var(--text-muted);"></i>
+    <h5 class="mt-3">Search for anything</h5>
+    <p class="text-muted">Find people, communities, events, and skills across PeerSphere.</p>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+{% block title %}PeerSphere — Connect with Your Campus Community{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="hero-bg-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <div class="animate-slide-up">
+                    <span class="hero-badge">✨ The Campus Social Network</span>
+                    <h1 class="hero-title">
+                        Find Your <span class="gradient-text">People</span>,<br>
+                        Build Your Future
+                    </h1>
+                    <p class="hero-subtitle">Connect with students, alumni & mentors at your university. Discover
+                        communities, events, and opportunities — all in one place.</p>
+                    <div class="hero-buttons">
+                        <a href="{{ url_for('auth.register') }}" class="btn-hero-primary">
+                            Join Free Today <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+                        <a href="{{ url_for('auth.login') }}" class="btn-hero-secondary">
+                            Sign In
+                        </a>
+                    </div>
+                    <div class="hero-stats">
+                        <div class="hero-stat">
+                            <span class="stat-number">10K+</span>
+                            <span class="stat-label">Students</span>
+                        </div>
+                        <div class="hero-stat">
+                            <span class="stat-number">500+</span>
+                            <span class="stat-label">Communities</span>
+                        </div>
+                        <div class="hero-stat">
+                            <span class="stat-number">200+</span>
+                            <span class="stat-label">Mentors</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 d-none d-lg-block">
+                <div class="hero-visual animate-fade-in">
+                    <div class="hero-card hero-card-1">
+                        <img src="{{ url_for('static', filename='img/default-avatar.svg') }}" class="mini-avatar"
+                            alt="user">
+                        <div>
+                            <div class="mini-name">Priya Sharma</div>
+                            <div class="mini-role">Computer Science • IIT Delhi</div>
+                        </div>
+                        <span class="mini-badge community-badge">🔥 12 streak</span>
+                    </div>
+                    <div class="hero-card hero-card-2">
+                        <div style="font-size:2rem;">🏘️</div>
+                        <div>
+                            <div class="mini-name">AI & ML Community</div>
+                            <div class="mini-role">2.4k members • 3 new posts</div>
+                        </div>
+                        <span class="mini-badge"
+                            style="color:var(--primary);background:rgba(108,92,231,0.1);">Join</span>
+                    </div>
+                    <div class="hero-card hero-card-3">
+                        <img src="{{ url_for('static', filename='img/default-avatar.svg') }}" class="mini-avatar"
+                            alt="user">
+                        <div>
+                            <div class="mini-name">Arjun Mehta</div>
+                            <div class="mini-role">Alumni • Google SWE</div>
+                        </div>
+                        <span class="mini-badge mentor-badge">Mentor</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="section-badge">Why PeerSphere?</span>
+            <h2 class="section-title">Everything You Need to Thrive</h2>
+            <p class="text-muted" style="max-width:550px;margin:0 auto;">A premium platform built for the modern
+                university experience.</p>
+        </div>
+        <div class="row g-4">
+            {% set features = [
+                ('bi-person-badge-fill','linear-gradient(135deg,#6C5CE7,#A29BFE)','Smart Profiles','Showcase skills, projects & achievements. Let opportunities find you.'),
+                ('bi-people-fill','linear-gradient(135deg,#00B894,#55EFC4)','Communities','Find your tribe — tech clubs, sports, arts, and everything in between.'),
+                ('bi-grid-fill','linear-gradient(135deg,#E84393,#FD79A8)','Social Feed','Share moments, react with emojis, create polls, and tell your stories.'),
+                ('bi-mortarboard-fill','linear-gradient(135deg,#FDCB6E,#E17055)','Alumni Mentoring','Get 1-on-1 guidance from alumni at top companies worldwide.'),
+                ('bi-calendar-event-fill','linear-gradient(135deg,#0984E3,#74B9FF)','Events','Discover hackathons, workshops, and networking events near you.'),
+                ('bi-chat-dots-fill','linear-gradient(135deg,#A29BFE,#6C5CE7)','Messaging','Direct messages with peers, mentors, and collaborators.')
+            ] %}
+            {% for icon, bg, title, desc in features %}
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card animate-slide-up">
+                    <div class="feature-icon" data-bg="{{ bg }}"><i class="bi {{ icon }}"></i></div>
+                    <h3>{{ title }}</h3>
+                    <p>{{ desc }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Premium Features Highlight -->
+<section style="padding:5rem 0;background:var(--background);">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <span class="section-badge">🔥 New Features</span>
+                <h2 class="section-title">Built to Keep You<br><span class="gradient-text">Engaged</span></h2>
+                <div class="d-flex flex-column gap-3 mt-4">
+                    {% for emoji, title, desc in [
+                    ('📖','24hr Stories','Share ephemeral moments that disappear after 24 hours'),
+                    ('❤️','Multi-Emoji Reactions','React with ❤️ 🔥 👏 🤯 😂 🎉 — not just a like'),
+                    ('🔥','Daily Streaks','Log in every day to build your streak & earn badges'),
+                    ('🗳️','Community Polls','Create polls to get instant opinions from your peers'),
+                    ('🔖','Bookmarks','Save posts you love to read later, anytime'),
+                    ] %}
+                    <div style="display:flex;gap:1rem;align-items:flex-start;">
+                        <span style="font-size:1.5rem;width:40px;flex-shrink:0;">{{ emoji }}</span>
+                        <div>
+                            <div style="font-weight:700;margin-bottom:0.2rem;">{{ title }}</div>
+                            <div style="color:var(--text-muted);font-size:0.9rem;">{{ desc }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div
+                    style="background:var(--surface);border-radius:var(--radius-xl);border:1px solid var(--border-color);overflow:hidden;box-shadow:var(--shadow-lg);">
+                    <!-- Mock post card -->
+                    <div
+                        style="padding:1rem;display:flex;align-items:center;gap:0.75rem;border-bottom:1px solid var(--border-color);">
+                        <img src="{{ url_for('static', filename='img/default-avatar.svg') }}"
+                            style="width:36px;height:36px;border-radius:50%;" alt="user">
+                        <div>
+                            <div style="font-weight:700;font-size:0.9rem;">Riya Patel <i class="bi bi-patch-check-fill"
+                                    style="color:var(--primary);font-size:0.75rem;"></i></div>
+                            <div style="font-size:0.75rem;color:var(--text-muted);">@riyapatel · 2h</div>
+                        </div>
+                    </div>
+                    <div style="padding:1rem;font-size:0.92rem;">Just got my internship offer from Swiggy! 🎉 Couldn't
+                        have done it without the mentors here. If you're preparing for placements, DM me!</div>
+                    <div
+                        style="padding:0.5rem 1rem;display:flex;gap:1rem;font-size:1.3rem;border-top:1px solid var(--border-color);">
+                        <span style="cursor:pointer;" title="Like">❤️</span>
+                        <span style="cursor:pointer;" title="React">🔥</span>
+                        <span style="cursor:pointer;" title="Clap">👏</span>
+                        <span style="cursor:pointer;" title="WOW">🤯</span>
+                        <span style="cursor:pointer;" title="Laugh">😂</span>
+                        <span style="margin-left:auto;cursor:pointer;" title="Bookmark">🔖</span>
+                    </div>
+                    <div style="padding:0.5rem 1rem 1rem;font-size:0.8rem;font-weight:700;">142 likes · 🔥 89 · 🎉 34
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section text-center">
+    <div class="container">
+        <span class="section-badge">Get Started Today</span>
+        <h2 class="cta-title mt-2 mb-3">Your Campus Community<br>Awaits You</h2>
+        <p class="text-muted mb-4" style="max-width:450px;margin:0 auto 2rem;">Join thousands of students already
+            connecting, learning, and growing together on PeerSphere.</p>
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+            <a href="{{ url_for('auth.register') }}" class="btn-hero-primary">
+                <i class="bi bi-rocket-takeoff me-2"></i>Join Free — No Credit Card
+            </a>
+            <a href="{{ url_for('auth.login') }}" class="btn-hero-secondary">Sign In</a>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="landing-footer">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-4">
+                <div class="footer-brand d-flex align-items-center gap-2">
+                    <i class="bi bi-globe2"
+                        style="background:var(--gradient-primary);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;font-size:1.5rem;"></i>
+                    Peer<span
+                        style="background:var(--gradient-primary);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">Sphere</span>
+                </div>
+                <p class="text-muted mt-2 mb-0" style="font-size:0.85rem;">The premium campus social network.</p>
+            </div>
+            <div class="col-md-4 text-center">
+                <div class="d-flex justify-content-center gap-3 mt-3 mt-md-0">
+                    {% for page in ['About','Privacy','Terms','Contact'] %}
+                    <a href="#" class="text-muted text-decoration-none" style="font-size:0.85rem;">{{ page }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <div class="d-flex justify-content-md-end gap-3">
+                    {% for icon in ['twitter-x','instagram','linkedin','github'] %}
+                    <a href="#" class="text-muted" style="font-size:1.1rem;"><i class="bi bi-{{ icon }}"></i></a>
+                    {% endfor %}
+                </div>
+                <div class="text-muted mt-2" style="font-size:0.8rem;">© 2025 PeerSphere. All rights reserved.</div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+{% block extra_js %}
+<script>
+    // Apply data-bg attributes as background styles (avoids IDE CSS lint false positives on Jinja2 expressions)
+    document.querySelectorAll('[data-bg]').forEach(el => { el.style.background = el.dataset.bg; });
+
+    // Landing nav scroll effect
+    const nav = document.querySelector('.navbar-main');
+    if (nav) {
+        nav.classList.add('landing-nav');
+        window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 50), { passive: true });
+    }
+    // Animate features on scroll
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(e => { if (e.isIntersecting) { e.target.style.opacity = '1'; e.target.style.transform = 'translateY(0)'; } });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.feature-card').forEach(c => observer.observe(c));
+</script>
+{% endblock %}
+{% endblock %}

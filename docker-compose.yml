@@ -1,0 +1,37 @@
+version: "3.9"
+
+services:
+  # ── PeerSphere Web App ──────────────────────────────────────────────────────
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: peersphere_app
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      # Override any of these via .env file or environment variables
+      SECRET_KEY: ${SECRET_KEY:-peersphere-super-secret-key-change-me}
+      DATABASE_URL: ${DATABASE_URL:-sqlite:////app/backend/instance/peersphere.db}
+      FLASK_ENV: ${FLASK_ENV:-production}
+      FLASK_DEBUG: ${FLASK_DEBUG:-0}
+      UPLOAD_FOLDER: /app/frontend/static/uploads
+    volumes:
+      # Persist the SQLite database between container restarts
+      - peersphere_db:/app/backend/instance
+      # Persist uploaded files (profile pictures, post images)
+      - peersphere_uploads:/app/frontend/static/uploads
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+# ── Named volumes (persist data across docker compose down/up) ─────────────────
+volumes:
+  peersphere_db:
+    name: peersphere_db
+  peersphere_uploads:
+    name: peersphere_uploads

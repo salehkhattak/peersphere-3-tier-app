@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block title %}{{ community.name }} — PeerSphere{% endblock %}
+
+{% block content %}
+<div class="community-detail-layout">
+    <!-- Community Header -->
+    <div class="card-glass community-detail-header">
+        <div class="community-banner" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <h2 class="community-banner-title">{{ community.name }}</h2>
+        </div>
+        <div class="community-detail-info">
+            <div class="community-detail-meta">
+                <span><i class="bi bi-people-fill me-1"></i>{{ community.active_member_count() }} members</span>
+                <span><i class="bi bi-calendar me-1"></i>Created {{ community.created_at.strftime('%B %Y') }}</span>
+                <span><i class="bi bi-person me-1"></i>by {{ community.creator.name }}</span>
+            </div>
+            <p class="mt-2">{{ community.description }}</p>
+            <div class="mt-3">
+                {% if is_member %}
+                {% if is_member.role == 'pending' %}
+                <button type="button" class="btn btn-secondary btn-sm" disabled><i class="bi bi-clock me-1"></i>Requested to join...</button>
+                <form method="POST" action="{{ url_for('communities.leave', community_id=community.id) }}" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-outline-danger btn-sm ms-2"><i class="bi bi-x-circle me-1"></i>Cancel Request</button>
+                </form>
+                {% else %}
+                <form method="POST" action="{{ url_for('communities.leave', community_id=community.id) }}" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-outline-danger btn-sm"><i class="bi bi-box-arrow-right me-1"></i>Leave Community</button>
+                </form>
+                {% if is_member.role == 'admin' %}
+                <a href="{{ url_for('communities.manage_members', community_id=community.id) }}" class="btn btn-outline-secondary btn-sm ms-2"><i class="bi bi-gear me-1"></i>Manage Members</a>
+                {% endif %}
+                {% endif %}
+                {% else %}
+                <form method="POST" action="{{ url_for('communities.join', community_id=community.id) }}" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-plus me-1"></i>Join Community</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mt-0">
+        <!-- Posts Column -->
+        <div class="col-lg-8">
+            {% if is_member %}
+            <div class="card-glass create-post-card">
+                <form method="POST" action="{{ url_for('feed.create_post') }}" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="community_id" value="{{ community.id }}">
+                    <div class="create-post-top">
+                        <div class="create-post-avatar">
+                            <img src="{{ url_for('static', filename='uploads/' + current_user.profile_picture) if current_user.profile_picture != 'default.png' else url_for('static', filename='img/default-avatar.svg') }}" alt="avatar">
+                        </div>
+                        <textarea name="content" class="create-post-input" placeholder="Post in {{ community.name }}..." rows="2" required></textarea>
+                    </div>
+                    <div class="create-post-actions">
+                        <label class="create-post-btn"><i class="bi bi-image text-success"></i><span>Photo</span><input type="file" name="image" accept="image/*" hidden></label>
+                        <button type="submit" class="btn btn-primary btn-sm px-4"><i class="bi bi-send me-1"></i>Post</button>
+                    </div>
+                </form>
+            </div>
+            {% endif %}
+
+            {% for post in posts %}
+            <div class="card-glass post-card">
+                <div class="post-header border-bottom-0 pb-2">
+                    <a href="{{ url_for('profile.view', user_id=post.author.id) }}" class="post-author-link text-decoration-none">
+                        <div class="post-avatar">
+                            <img src="{{ url_for('static', filename='uploads/' + post.author.profile_picture) if post.author.profile_picture != 'default.png' else url_for('static', filename='img/default-avatar.svg') }}" alt="avatar">
+                        </div>
+                        <div class="lh-sm">
+                            <strong class="text-dark">{{ post.author.name }}</strong>
+                        </div>
+                    </a>
+                    
+                    <button class="btn btn-link text-dark ms-auto p-0"><i class="bi bi-three-dots"></i></button>
+                </div>
+
+                <div class="post-content">
+                    <p class="mb-1"><a href="{{ url_for('profile.view', user_id=post.author.id) }}" class="text-dark fw-bold text-decoration-none me-1">{{ post.author.name }}</a>{{ post.content }}</p>
+                    
+                    {% if post.comment_count() > 0 %}
+                    <div class="text-muted mt-1" style="font-size: 0.9rem;">
+                        View all {{ post.comment_count() }} comments
+                    </div>
+                    {% endif %}
+                    
+                    <div class="text-muted text-uppercase mt-1" style="font-size: 0.7rem;">
+                        {{ post.created_at.strftime('%B %d, %Y') }}
+                    </div>
+                </div>
+
+                <div class="post-actions border-top pt-2 mt-2">
+                    <form method="POST" action="{{ url_for('feed.like_post', post_id=post.id) }}" class="d-inline m-0 p-0">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="post-action-btn {{ 'liked' if post.is_liked_by(current_user) }}">
+                            <i class="bi {{ 'bi-heart-fill' if post.is_liked_by(current_user) else 'bi-heart' }}"></i>
+                            <span>Like</span>
+                        </button>
+                    </form>
+                    <button class="post-action-btn"><i class="bi bi-chat"></i></button>
+                    <button class="post-action-btn"><i class="bi bi-send"></i></button>
+
+                    <form method="POST" action="{{ url_for('feed.bookmark_post', post_id=post.id) }}" class="d-inline m-0 ms-auto">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="post-action-btn {% if post.is_bookmarked_by(current_user) %}bookmarked{% endif %}" title="{% if post.is_bookmarked_by(current_user) %}Saved{% else %}Save{% endif %}">
+                            <i class="bi {% if post.is_bookmarked_by(current_user) %}bi-bookmark-fill{% else %}bi-bookmark{% endif %}"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <div class="post-stats mt-1">
+                    {% if post.like_count() > 0 %}
+                    <span class="text-dark fw-bold" style="font-size:0.85rem;">{{ post.like_count() }} likes</span>
+                    {% else %}
+                    <span class="text-muted fw-normal" style="font-size:0.85rem;">Be the first to like this</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="card-glass text-center py-4">
+                <p class="text-muted mb-0">No posts in this community yet. Be the first to post!</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Members Sidebar -->
+        <div class="col-lg-4">
+            <div class="card-glass">
+                <h6 class="card-glass-title"><i class="bi bi-people me-2"></i>Members ({{ community.active_member_count() }})</h6>
+                {% for member in members %}
+                <a href="{{ url_for('profile.view', user_id=member.id) }}" class="sidebar-item">
+                    <div class="suggestion-avatar">
+                        <img src="{{ url_for('static', filename='uploads/' + member.profile_picture) if member.profile_picture != 'default.png' else url_for('static', filename='img/default-avatar.svg') }}" alt="avatar" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                    </div>
+                    <div>
+                        <div class="sidebar-item-name">{{ member.name }}</div>
+                        <small class="text-muted">{{ member.department or member.role|capitalize }}</small>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

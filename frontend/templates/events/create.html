@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Create Event — PeerSphere{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card-glass">
+            <h4 class="card-glass-title"><i class="bi bi-calendar-plus me-2"></i>Create Event</h4>
+            <form method="POST" action="{{ url_for('events.create') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="mb-3">
+                    <label class="form-label-custom">Event Title</label>
+                    <input type="text" name="title" class="form-control-modern" placeholder="e.g., Annual Hackathon 2026" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label-custom">Description</label>
+                    <textarea name="description" class="form-control-modern" rows="3" placeholder="What's this event about?"></textarea>
+                </div>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label-custom">Date & Time</label>
+                        <input type="datetime-local" name="date" class="form-control-modern" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label-custom">Event Type</label>
+                        <select name="event_type" class="form-control-modern">
+                            <option value="hackathon">🏆 Hackathon</option>
+                            <option value="workshop">🔧 Workshop</option>
+                            <option value="seminar">📚 Seminar</option>
+                            <option value="meetup">🤝 Meetup</option>
+                            <option value="general">📋 General</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label-custom">Location</label>
+                    <input type="text" name="location" class="form-control-modern" placeholder="e.g., Main Auditorium, Block A">
+                </div>
+                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-rocket-takeoff me-1"></i>Create Event</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

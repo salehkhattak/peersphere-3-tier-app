@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# Environment files
+.env
+*.env.local
+
+# SQLite databases (use Docker volume instead)
+*.db
+
+# Uploaded files (use Docker volume instead)
+frontend/static/uploads/*
+!frontend/static/uploads/.gitkeep
+
+# Flask
+instance/
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+*.dockerignore

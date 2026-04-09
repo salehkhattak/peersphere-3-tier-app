@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+{% block title %}{{ user.name }} — PeerSphere{% endblock %}
+
+{% block content %}
+<div class="profile-layout">
+    <!-- Profile Header -->
+    <div class="profile-header-card card-glass">
+        <div class="profile-cover" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+        <div class="profile-header-content">
+            <div class="profile-avatar-large">
+                <img src="{{ url_for('static', filename='uploads/' + user.profile_picture) if user.profile_picture != 'default.png' else url_for('static', filename='img/default-avatar.svg') }}" alt="{{ user.name }}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+            </div>
+            <div class="profile-header-info">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <h2 class="profile-name">{{ user.name }}</h2>
+                    <span class="role-badge role-{{ user.role }}">
+                        {% if user.role == 'alumni' %}<i class="bi bi-patch-check-fill me-1"></i>{% endif %}
+                        {{ user.role|capitalize }}
+                    </span>
+                    {% if user.mentor_profile %}
+                    <span class="role-badge role-mentor"><i class="bi bi-mortarboard-fill me-1"></i>Mentor</span>
+                    {% endif %}
+                </div>
+                <p class="profile-bio">{{ user.bio or 'No bio yet.' }}</p>
+                <div class="profile-meta-row">
+                    {% if user.university %}
+                    <span class="profile-meta-item"><i class="bi bi-building"></i> {{ user.university }}</span>
+                    {% endif %}
+                    {% if user.department %}
+                    <span class="profile-meta-item"><i class="bi bi-book"></i> {{ user.department }}</span>
+                    {% endif %}
+                    {% if user.graduation_year %}
+                    <span class="profile-meta-item"><i class="bi bi-calendar"></i> Class of {{ user.graduation_year }}</span>
+                    {% endif %}
+                    <span class="profile-meta-item"><i class="bi bi-clock"></i> Joined {{ user.created_at.strftime('%B %Y') }}</span>
+                </div>
+            </div>
+            <div class="profile-header-actions">
+                {% if current_user.id == user.id %}
+                <a href="{{ url_for('profile.edit') }}" class="btn btn-primary"><i class="bi bi-pencil me-1"></i>Edit Profile</a>
+                {% else %}
+                <a href="{{ url_for('messages.chat', user_id=user.id) }}" class="btn btn-primary"><i class="bi bi-chat-dots me-1"></i>Message</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mt-0">
+        <!-- Left Column -->
+        <div class="col-lg-4">
+            <!-- Profile Strength -->
+            {% if current_user.id == user.id %}
+            <div class="card-glass">
+                <h6 class="card-glass-title"><i class="bi bi-speedometer2 me-2"></i>Profile Strength</h6>
+                <div class="profile-strength-large">
+                    <div class="strength-circle">
+                        <svg viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="45" fill="none" stroke="var(--border-color)" stroke-width="6"/>
+                            <circle cx="50" cy="50" r="45" fill="none" stroke="url(#strengthGrad)" stroke-width="6"
+                                stroke-dasharray="{{ user.profile_completion() * 2.83 }} 283"
+                                stroke-linecap="round" transform="rotate(-90 50 50)"/>
+                            <defs><linearGradient id="strengthGrad"><stop offset="0%" stop-color="#667eea"/><stop offset="100%" stop-color="#764ba2"/></linearGradient></defs>
+                        </svg>
+                        <span class="strength-value">{{ user.profile_completion() }}%</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Stats -->
+            <div class="card-glass">
+                <h6 class="card-glass-title"><i class="bi bi-bar-chart me-2"></i>Stats</h6>
+                <div class="profile-stats-grid">
+                    <div class="profile-stat-item">
+                        <span class="stat-value">{{ user.posts.count() }}</span>
+                        <span class="stat-label">Posts</span>
+                    </div>
+                    <div class="profile-stat-item">
+                        <span class="stat-value">{{ user.communities_joined.count() }}</span>
+                        <span class="stat-label">Communities</span>
+                    </div>
+                    <div class="profile-stat-item">
+                        <span class="stat-value">{{ user.skills.count() }}</span>
+                        <span class="stat-label">Skills</span>
+                    </div>
+                    <div class="profile-stat-item">
+                        <span class="stat-value">{{ user.events_attending.count() }}</span>
+                        <span class="stat-label">Events</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Skills -->
+            <div class="card-glass">
+                <h6 class="card-glass-title"><i class="bi bi-lightning-fill me-2"></i>Skills</h6>
+                <div class="skills-container">
+                    {% for skill in skills %}
+                    <span class="skill-pill">{{ skill.skill_name }}</span>
+                    {% else %}
+                    <p class="text-muted small">No skills added yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Communities -->
+            <div class="card-glass">
+                <h6 class="card-glass-title"><i class="bi bi-people-fill me-2"></i>Communities</h6>
+                {% for community in communities %}
+                <a href="{{ url_for('communities.detail', community_id=community.id) }}" class="sidebar-item">
+                    <div class="sidebar-item-icon" style="background: linear-gradient(135deg,#667eea,#764ba2);">
+                        <i class="bi bi-people"></i>
+                    </div>
+                    <div>
+                        <div class="sidebar-item-name">{{ community.name }}</div>
+                        <small class="text-muted">{{ community.member_count() }} members</small>
+                    </div>
+                </a>
+                {% else %}
+                <p class="text-muted small">Not in any communities yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Right Column - Recent Posts -->
+        <div class="col-lg-8">
+            <div class="card-glass p-0 mb-4" style="background:transparent;box-shadow:none;">
+                <ul class="nav nav-pills custom-pills" id="profileTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active fw-bold px-4 rounded-pill me-2" id="posts-tab" data-bs-toggle="pill" data-bs-target="#posts" type="button" role="tab">My Posts</button>
+                    </li>
+                    {% if current_user.id == user.id %}
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link fw-bold px-4 rounded-pill" id="saved-tab" data-bs-toggle="pill" data-bs-target="#saved" type="button" role="tab"><i class="bi bi-bookmark me-1"></i>Saved</button>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+
+            <div class="tab-content" id="profileTabsContent">
+                <!-- My Posts Tab -->
+                <div class="tab-pane fade show active" id="posts" role="tabpanel">
+                    {% for post in recent_posts %}
+                    <div class="card-glass post-card">
+                        <div class="post-header border-bottom-0 pb-2">
+                            <div class="post-author-link text-decoration-none">
+                                <div class="post-avatar">
+                                    <img src="{{ url_for('static', filename='uploads/' + post.author.profile_picture) if post.author.profile_picture != 'default.png' else url_for('static', filename='img/default-avatar.svg') }}" alt="avatar">
+                                </div>
+                                <div class="lh-sm">
+                                    <strong class="text-dark">{{ post.author.name }}</strong>
+                                </div>
+                            </div>
+                            <button class="btn btn-link text-dark ms-auto p-0"><i class="bi bi-three-dots"></i></button>
+                        </div>
+
+                        <div class="post-content">
+                            <p class="mb-1"><strong class="text-dark me-1">{{ post.author.name }}</strong>{{ post.content }}</p>
+                            
+                            {% if post.comment_count() > 0 %}
+                            <div class="text-muted mt-1" style="font-size: 0.9rem;">
+                                View all {{ post.comment_count() }} comments
+                            </div>
+                            {% endif %}
+                            
+                            <div class="text-muted text-uppercase mt-1" style="font-size: 0.7rem;">
+                                {{ post.created_at.strftime('%B %d, %Y') }}
+                            </div>
+                        </div>
+
+                        <div class="post-actions border-top pt-2 mt-2">
+                            <form method="POST" action="{{ url_for('feed.like_post', post_id=post.id) }}" class="d-inline m-0 p-0">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="post-action-btn {{ 'liked' if post.is_liked_by(current_user) }}">
+                                    <i class="bi {{ 'bi-heart-fill' if post.is_liked_by(current_user) else 'bi-heart' }}"></i>
+                                    <span>Like</span>
+                                </button>
+                            </form>
+                            <button class="post-action-btn"><i class="bi bi-chat"></i></button>
+                            <button class="post-action-btn"><i class="bi bi-send"></i></button>
+                            <form method="POST" action="{{ url_for('feed.bookmark_post', post_id=post.id) }}" class="d-inline m-0 ms-auto">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="post-action-btn {% if post.is_bookmarked_by(current_user) %}bookmarked{% endif %}" title="{% if post.is_bookmarked_by(current_user) %}Saved{% else %}Save{% endif %}">
+                                    <i class="bi {% if post.is_bookmarked_by(current_user) %}bi-bookmark-fill{% else %}bi-bookmark{% endif %}"></i>
+                                </button>
+                            </form>
+                        </div>
+
+                        <div class="post-stats mt-1">
+                            {% if post.like_count() > 0 %}
+                            <span class="text-dark fw-bold" style="font-size:0.85rem;">{{ post.like_count() }} likes</span>
+                            {% else %}
+                            <span class="text-muted fw-normal" style="font-size:0.85rem;">Be the first to like this</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="card-glass text-center py-4">
+                        <p class="text-muted mb-0">No posts yet.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Saved Posts Tab -->
+                {% if current_user.id == user.id %}
+                <div class="tab-pane fade" id="saved" role="tabpanel">
+                    {% for post in saved_posts %}
+                    <div class="card-glass post-card">
+                        <div class="post-header border-bottom-0 pb-2">
+                            <a href="{{ url_for('profile.view', user_id=post.author.id) }}" class="post-author-link text-decoration-none">
+                                <div class="post-avatar">
+                                    <img src="{{ url_for('static', filename='uploads/' + post.author.profile_picture) if post.author.profile_picture != 'default.png' else url_for('static', filename='img/default-avatar.svg') }}" alt="avatar">
+                                </div>
+                                <div class="lh-sm">
+                                    <strong class="text-dark">{{ post.author.name }}</strong>
+                                </div>
+                            </a>
+                            <button class="btn btn-link text-dark ms-auto p-0"><i class="bi bi-three-dots"></i></button>
+                        </div>
+
+                        <div class="post-content">
+                            <p class="mb-1"><a href="{{ url_for('profile.view', user_id=post.author.id) }}" class="text-dark fw-bold text-decoration-none me-1">{{ post.author.name }}</a>{{ post.content }}</p>
+                            
+                            {% if post.comment_count() > 0 %}
+                            <div class="text-muted mt-1" style="font-size: 0.9rem;">
+                                View all {{ post.comment_count() }} comments
+                            </div>
+                            {% endif %}
+                            
+                            <div class="text-muted text-uppercase mt-1" style="font-size: 0.7rem;">
+                                {{ post.created_at.strftime('%B %d, %Y') }}
+                            </div>
+                        </div>
+
+                        <div class="post-actions border-top pt-2 mt-2">
+                            <form method="POST" action="{{ url_for('feed.like_post', post_id=post.id) }}" class="d-inline m-0 p-0">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="post-action-btn {{ 'liked' if post.is_liked_by(current_user) }}">
+                                    <i class="bi {{ 'bi-heart-fill' if post.is_liked_by(current_user) else 'bi-heart' }}"></i>
+                                    <span>Like</span>
+                                </button>
+                            </form>
+                            <button class="post-action-btn"><i class="bi bi-chat"></i></button>
+                            <button class="post-action-btn"><i class="bi bi-send"></i></button>
+                            <form method="POST" action="{{ url_for('feed.bookmark_post', post_id=post.id) }}" class="d-inline m-0 ms-auto">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="post-action-btn bookmarked" title="Unsave">
+                                    <i class="bi bi-bookmark-fill"></i>
+                                    <span>Unsave</span>
+                                </button>
+                            </form>
+                        </div>
+
+                        <div class="post-stats mt-1">
+                            {% if post.like_count() > 0 %}
+                            <span class="text-dark fw-bold" style="font-size:0.85rem;">{{ post.like_count() }} likes</span>
+                            {% else %}
+                            <span class="text-muted fw-normal" style="font-size:0.85rem;">Be the first to like this</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="card-glass text-center py-5">
+                        <i class="bi bi-bookmark-star text-muted" style="font-size:2rem;"></i>
+                        <h6 class="mt-3">No saved posts yet</h6>
+                        <p class="text-muted small">Posts you interact with and save will appear here.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

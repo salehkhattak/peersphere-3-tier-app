@@ -1,0 +1,405 @@
+{% extends "base.html" %}
+{% block title %}Feed — PeerSphere{% endblock %}
+
+{% block content %}
+<div class="feed-layout py-3">
+
+    <!-- Stories Bar -->
+    {% if story_users %}
+    <div class="stories-bar animate-fade-in">
+        <!-- Add your own story -->
+        <div class="story-item" onclick="document.getElementById('storyCreateModal').style.display='flex'">
+            <div class="story-ring add-story">
+                <i class="bi bi-plus-lg"></i>
+            </div>
+            <span class="story-name">Your Story</span>
+        </div>
+        {% for uid, data in story_users.items() %}
+        <div class="story-item" onclick="openStory('{{ url_for('static', filename='uploads/' + data.user.profile_picture) if data.user.profile_picture != 'default.png' else url_for('static', filename='img/default-avatar.svg') }}', '{{ data.user.name }}', '{{ data.stories[0].text_content or '' }}', '{{ data.stories[0].bg_gradient }}', '{{ data.stories[0].image_url or '' }}')">
+            <div class="story-ring {% if not data.has_unviewed %}viewed{% endif %}">
+                <img src="{{ url_for('static', filename='uploads/' + data.user.profile_picture) if data.user.profile_picture != 'default.png' else url_for('static', filename='img/default-avatar.svg') }}" alt="{{ data.user.name }}">
+            </div>
+            <span class="story-name">{{ data.user.name.split(' ')[0] }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="stories-bar animate-fade-in">
+        <div class="story-item" onclick="document.getElementById('storyCreateModal').style.display='flex'">
+            <div class="story-ring add-story"><i class="bi bi-plus-lg"></i></div>
+            <span class="story-name">Add Story</span>
+        </div>
+        <div class="story-item" style="opacity:0.4;">
+            <div class="story-ring" style="background:var(--border-color);">
+                <img src="{{ url_for('static', filename='img/default-avatar.svg') }}" alt="">
+            </div>
+            <span class="story-name">Be first!</span>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Create Post Card -->
+    <div class="card-glass create-post-card animate-slide-up">
+        <form method="POST" action="{{ url_for('feed.create_post') }}" enctype="multipart/form-data" id="createPostForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="create-post-top">
+                <div class="create-post-avatar">
+                    <img src="{{ url_for('static', filename='uploads/' + current_user.profile_picture) if current_user.profile_picture != 'default.png' else url_for('static', filename='img/default-avatar.svg') }}" alt="avatar">
+                </div>
+                <textarea name="content" class="create-post-input" id="postTextarea" placeholder="What's on your mind, {{ current_user.name.split(' ')[0] }}? ✨" rows="2" required></textarea>
+            </div>
+
+            <!-- Image preview -->
+            <div id="imagePreviewContainer" style="display:none; margin:0.5rem 0;">
+                <img id="imagePreview" style="max-height:200px; border-radius:var(--radius-md); max-width:100%;" alt="preview">
+                <button type="button" onclick="clearImagePreview()" style="background:var(--danger);border:none;color:white;border-radius:50%;width:24px;height:24px;margin-left:8px;cursor:pointer;font-size:0.7rem;">✕</button>
+            </div>
+
+            <!-- Poll creator -->
+            <div class="poll-creator" id="pollCreator">
+                <p style="font-weight:700;font-size:0.85rem;margin-bottom:0.5rem;">📊 Create a Poll</p>
+                <input type="text" name="poll_question" id="pollQuestion" placeholder="Ask a question...">
+                <div id="pollOptionsContainer">
+                    <input type="text" name="poll_options[]" placeholder="Option 1">
+                    <input type="text" name="poll_options[]" placeholder="Option 2">
+                </div>
+                <button type="button" class="add-poll-option" onclick="addPollOption()">+ Add option</button>
+            </div>
+
+            <div class="create-post-actions">
+                <div class="d-flex gap-1">
+                    <label class="create-post-btn" title="Add photo">
+                        <i class="bi bi-image" style="color:#00B894;"></i><span>Photo</span>
+                        <input type="file" name="image" id="imageInput" accept="image/*" hidden onchange="previewImage(this)">
+                    </label>
+                    <button type="button" class="create-post-btn" onclick="togglePoll()" title="Add poll">
+                        <i class="bi bi-bar-chart-line" style="color:var(--primary);"></i><span>Poll</span>
+                    </button>
+                    <button type="button" class="create-post-btn" title="Add emoji" onclick="insertEmoji()">
+                        <i class="bi bi-emoji-smile" style="color:var(--warning);"></i><span>Feel</span>
+                    </button>
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm px-4" id="postSubmitBtn">
+                    <i class="bi bi-send-fill me-1"></i>Post
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Posts -->
+    {% for post in posts.items %}
+    <div class="card-glass post-card animate-slide-up" id="post-{{ post.id }}" data-post-id="{{ post.id }}">
+        <!-- Post Header -->
+        <div class="post-header">
+            <a href="{{ url_for('profile.view', user_id=post.author.id) }}" class="post-author-link text-decoration-none">
+                <div class="post-avatar {% if post.author.id in story_users %}has-story{% endif %}">
+                    <img src="{{ url_for('static', filename='uploads/' + post.author.profile_picture) if post.author.profile_picture != 'default.png' else url_for('static', filename='img/default-avatar.svg') }}" alt="avatar">
+                </div>
+                <div>
+                    <div class="d-flex align-items-center">
+                        <span class="post-author-name">{{ post.author.name }}</span>
+                        {% if post.author.is_verified %}<i class="bi bi-patch-check-fill verified-badge"></i>{% endif %}
+                        {% if post.author.role == 'alumni' %}<span class="role-badge-sm role-alumni ms-2">Alumni</span>{% endif %}
+                    </div>
+                    <div class="post-meta">
+                        @{{ post.author.username }}
+                        {% if post.community %} · <span style="color:var(--primary);">{{ post.community.name }}</span>{% endif %}
+                        · {{ post.created_at.strftime('%b %d') }}
+                    </div>
+                </div>
+            </a>
+            <div class="ms-auto d-flex align-items-center gap-2">
+                {% if post.user_id == current_user.id %}
+                <form method="POST" action="{{ url_for('feed.delete_post', post_id=post.id) }}" class="m-0">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-link text-muted p-1" style="font-size:0.85rem;" title="Delete" onclick="return confirm('Delete this post?')"><i class="bi bi-trash"></i></button>
+                </form>
+                {% endif %}
+                <button class="btn btn-link text-muted p-1"><i class="bi bi-three-dots"></i></button>
+            </div>
+        </div>
+
+        <!-- Post Content -->
+        <div class="post-content pt-0">
+            <p class="mb-2">{{ post.content }}</p>
+        </div>
+
+        <!-- Post Image (with double-tap) -->
+        {% if post.image_url %}
+        <div class="post-image mb-2" id="img-{{ post.id }}" ondblclick="doubleTapLike({{ post.id }}, this)">
+            <img src="{{ url_for('static', filename='uploads/' + post.image_url) }}" alt="post image" loading="lazy">
+            <span class="double-tap-heart" id="heart-{{ post.id }}">❤️</span>
+        </div>
+        {% endif %}
+
+        <!-- Poll -->
+        {% if post.poll %}
+        <div class="poll-container mb-2">
+            <div class="poll-question">{{ post.poll.question }}</div>
+            {% set total = post.poll.total_votes() %}
+            {% set user_voted = post.poll.has_voted(current_user) %}
+            {% set user_vote = post.poll.user_vote(current_user) %}
+            {% for option in post.poll.options.all() %}
+            {% if user_voted %}
+            <div class="poll-option voted {% if option.id == user_vote %}selected{% endif %}">
+                <div class="poll-option-bar" style="width:{{ option.percentage() }}%;"></div>
+                <div class="poll-option-content">
+                    <span>{% if option.id == user_vote %}✓ {% endif %}{{ option.text }}</span>
+                    <span style="color:var(--primary);font-weight:700;">{{ option.percentage() }}%</span>
+                </div>
+            </div>
+            {% else %}
+            <form method="POST" action="{{ url_for('feed.vote_poll', post_id=post.id) }}" class="m-0">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="option_id" value="{{ option.id }}">
+                <button type="submit" class="poll-option w-100 text-start border-0 bg-transparent p-0">
+                    <div class="poll-option-bar" style="width:0%;"></div>
+                    <div class="poll-option-content"><span>{{ option.text }}</span></div>
+                </button>
+            </form>
+            {% endif %}
+            {% endfor %}
+            <div class="poll-total">🗳️ {{ total }} vote{{ 's' if total != 1 }}</div>
+        </div>
+        {% endif %}
+
+        <!-- Post Actions -->
+        <div class="post-actions border-top pt-2 mt-2">
+            <!-- Like -->
+            <form method="POST" action="{{ url_for('feed.like_post', post_id=post.id) }}" class="d-inline m-0 like-form" data-post-id="{{ post.id }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="post-action-btn {% if post.is_liked_by(current_user) %}liked{% endif %}" id="like-btn-{{ post.id }}">
+                    <i class="bi {% if post.is_liked_by(current_user) %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+                </button>
+            </form>
+
+            <!-- Comment -->
+            <button class="post-action-btn" onclick="toggleComments({{ post.id }})">
+                <i class="bi bi-chat"></i>
+            </button>
+
+            <!-- Reaction Picker -->
+            <div style="position:relative;">
+                <button class="post-action-btn" onmouseenter="showReactionPicker({{ post.id }})" onclick="showReactionPicker({{ post.id }})">
+                    <i class="bi bi-emoji-smile"></i>
+                </button>
+                <div class="reaction-picker" id="reaction-picker-{{ post.id }}" onmouseleave="hideReactionPicker({{ post.id }})">
+                    {% for emoji in ['❤️','🔥','👏','🤯','😂','🎉'] %}
+                    <form method="POST" action="{{ url_for('feed.react_post', post_id=post.id) }}" class="d-inline m-0">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="emoji" value="{{ emoji }}">
+                        <button type="submit" title="{{ emoji }}">{{ emoji }}</button>
+                    </form>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Share -->
+            <button class="post-action-btn" onclick="sharePost({{ post.id }})" title="Share">
+                <i class="bi bi-send"></i>
+            </button>
+
+            <!-- Bookmark (right-aligned) -->
+            <form method="POST" action="{{ url_for('feed.bookmark_post', post_id=post.id) }}" class="d-inline m-0 ms-auto">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="post-action-btn {% if post.is_bookmarked_by(current_user) %}bookmarked{% endif %}" title="{% if post.is_bookmarked_by(current_user) %}Saved{% else %}Save{% endif %}">
+                    <i class="bi {% if post.is_bookmarked_by(current_user) %}bi-bookmark-fill{% else %}bi-bookmark{% endif %}"></i>
+                </button>
+            </form>
+        </div>
+
+        <!-- Reactions Summary -->
+        {% set reactions = post.get_reactions_summary() %}
+        {% if reactions %}
+        <div class="reactions-bar mt-2">
+            {% for emoji, count in reactions.items() %}
+            <span class="reaction-chip {% if post.user_reaction(current_user) == emoji %}active{% endif %}">{{ emoji }} {{ count }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Like Count & Content -->
+        <div class="post-stats mt-1">
+            {% if post.like_count() > 0 %}
+            <span class="text-dark fw-bold" style="font-size:0.85rem;">{{ post.like_count() }} like{{ 's' if post.like_count() != 1 }}</span>
+            {% else %}
+            <span style="font-weight:400;color:var(--text-muted);font-size:0.85rem;">Be the first to like this ✨</span>
+            {% endif %}
+        </div>
+
+        <!-- View Comments Link -->
+        {% if post.comment_count() > 0 %}
+        <div class="px-3 pb-1" style="font-size:0.82rem;color:var(--text-muted);cursor:pointer;" onclick="toggleComments({{ post.id }})">
+            View all {{ post.comment_count() }} comment{{ 's' if post.comment_count() != 1 }}
+        </div>
+        {% endif %}
+
+        <!-- Comments Section -->
+        <div class="post-comments" id="comments-{{ post.id }}" style="display:none;">
+            {% for comment in post.recent_comments(5) %}
+            <div class="comment-item">
+                <div class="comment-avatar">
+                    <img src="{{ url_for('static', filename='uploads/' + comment.author.profile_picture) if comment.author.profile_picture != 'default.png' else url_for('static', filename='img/default-avatar.svg') }}" alt="avatar">
+                </div>
+                <div class="comment-body">
+                    <a href="{{ url_for('profile.view', user_id=comment.author.id) }}" class="comment-author text-decoration-none">{{ comment.author.name }}</a>
+                    <span class="comment-text">{{ comment.comment_text }}</span>
+                    <small class="comment-time">{{ comment.created_at.strftime('%b %d, %I:%M %p') }}</small>
+                </div>
+            </div>
+            {% endfor %}
+
+            <form method="POST" action="{{ url_for('feed.comment_post', post_id=post.id) }}" class="comment-form mt-2">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="comment-input-wrapper">
+                    <input type="text" name="comment_text" class="comment-input" placeholder="Add a comment... 💬" required>
+                    <button type="submit" class="comment-submit"><i class="bi bi-send-fill"></i></button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% else %}
+    <div class="card-glass text-center py-5 animate-slide-up">
+        <div style="font-size:3.5rem;">🌟</div>
+        <h4 class="mt-3 fw-800">Your feed is empty!</h4>
+        <p class="text-muted">Start sharing or explore communities to see posts here.</p>
+        <a href="{{ url_for('communities.index') }}" class="btn btn-primary px-4">Explore Communities</a>
+    </div>
+    {% endfor %}
+
+    <!-- Pagination -->
+    {% if posts.pages > 1 %}
+    <nav class="pagination-custom mt-2">
+        {% if posts.has_prev %}
+        <a href="{{ url_for('feed.index', page=posts.prev_num) }}" class="page-link-custom"><i class="bi bi-chevron-left"></i></a>
+        {% endif %}
+        {% for p in posts.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+            {% if p %}
+            <a href="{{ url_for('feed.index', page=p) }}" class="page-link-custom {{ 'active' if p == posts.page }}">{{ p }}</a>
+            {% else %}
+            <span class="page-ellipsis">…</span>
+            {% endif %}
+        {% endfor %}
+        {% if posts.has_next %}
+        <a href="{{ url_for('feed.index', page=posts.next_num) }}" class="page-link-custom"><i class="bi bi-chevron-right"></i></a>
+        {% endif %}
+    </nav>
+    {% endif %}
+</div>
+
+<!-- Story Create Modal -->
+<div id="storyCreateModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:10001;align-items:center;justify-content:center;">
+    <div style="background:var(--surface);border-radius:var(--radius-xl);padding:2rem;max-width:420px;width:90%;position:relative;">
+        <button onclick="document.getElementById('storyCreateModal').style.display='none'" style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--text-muted);">✕</button>
+        <h5 class="fw-800 mb-3">✨ Add Your Story</h5>
+        <form method="POST" action="{{ url_for('stories.create_story') }}" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <textarea name="text_content" class="create-post-input w-100 mb-3" placeholder="What's your story? Write something..." rows="3"></textarea>
+            <div class="mb-3">
+                <label class="form-label-custom">Background</label>
+                <div class="d-flex gap-2">
+                    {% for i in range(1, 6) %}
+                    <label style="cursor:pointer;">
+                        <input type="radio" name="bg_gradient" value="gradient-{{ i }}" {% if i == 1 %}checked{% endif %} hidden>
+                        <div class="story-content-wrap gradient-{{ i }}" style="width:40px;height:40px;border-radius:50%;min-height:unset;padding:0;border:3px solid transparent;" onclick="this.parentElement.querySelector('input').checked=true;document.querySelectorAll('.grad-sel').forEach(e=>e.style.borderColor='transparent');this.style.borderColor='white';"></div>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+            <label class="create-post-btn w-100 justify-content-center border border-dashed mb-3" style="border-style:dashed!important;">
+                <i class="bi bi-image me-2"></i>Or upload an image
+                <input type="file" name="story_image" accept="image/*" hidden>
+            </label>
+            <button type="submit" class="btn btn-primary w-100">Share Story 🚀</button>
+        </form>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+function toggleComments(postId) {
+    const el = document.getElementById('comments-' + postId);
+    el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+function togglePoll() {
+    const el = document.getElementById('pollCreator');
+    el.classList.toggle('active');
+}
+function addPollOption() {
+    const container = document.getElementById('pollOptionsContainer');
+    const count = container.querySelectorAll('input').length + 1;
+    if (count > 4) return;
+    const inp = document.createElement('input');
+    inp.type = 'text'; inp.name = 'poll_options[]'; inp.placeholder = 'Option ' + count;
+    inp.className = 'mt-2';
+    container.appendChild(inp);
+}
+function previewImage(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            document.getElementById('imagePreview').src = e.target.result;
+            document.getElementById('imagePreviewContainer').style.display = 'block';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+function clearImagePreview() {
+    document.getElementById('imagePreview').src = '';
+    document.getElementById('imagePreviewContainer').style.display = 'none';
+    document.getElementById('imageInput').value = '';
+}
+function doubleTapLike(postId, container) {
+    const heart = document.getElementById('heart-' + postId);
+    heart.classList.remove('animate');
+    void heart.offsetWidth;
+    heart.classList.add('animate');
+    const likeForm = document.querySelector('.like-form[data-post-id="' + postId + '"]');
+    const likeBtn = document.getElementById('like-btn-' + postId);
+    if (likeBtn && !likeBtn.classList.contains('liked')) {
+        likeForm.submit();
+    }
+    setTimeout(() => heart.classList.remove('animate'), 900);
+}
+function showReactionPicker(postId) {
+    document.getElementById('reaction-picker-' + postId).classList.add('show');
+}
+function hideReactionPicker(postId) {
+    document.getElementById('reaction-picker-' + postId).classList.remove('show');
+}
+function sharePost(postId) {
+    if (navigator.share) {
+        navigator.share({ title: 'PeerSphere Post', url: window.location.href });
+    } else {
+        navigator.clipboard.writeText(window.location.href).then(() => alert('Link copied! 🔗'));
+    }
+}
+function openStory(avatar, name, text, gradient, imageUrl) {
+    const overlay = document.getElementById('storyModalOverlay');
+    const wrap = document.getElementById('storyContentWrap');
+    const header = document.getElementById('storyHeader');
+    const body = document.getElementById('storyBody');
+    wrap.className = 'story-content-wrap ' + gradient;
+    header.innerHTML = '<img src="' + avatar + '" /><span>' + name + '</span>';
+    if (imageUrl) {
+        body.innerHTML = '<img src="/static/uploads/' + imageUrl + '" style="max-width:100%;border-radius:8px;" />';
+    } else {
+        body.innerHTML = text ? '<p>' + text + '</p>' : '<p style="opacity:0.6;">No content</p>';
+    }
+    overlay.classList.add('active');
+}
+function closeStoryModal(e) {
+    if (e.target === document.getElementById('storyModalOverlay')) closeStoryModalDirect();
+}
+function closeStoryModalDirect() {
+    document.getElementById('storyModalOverlay').classList.remove('active');
+}
+function insertEmoji() {
+    const ta = document.getElementById('postTextarea');
+    const emojis = ['😊','🚀','🔥','💡','🎉','✨','❤️','🎯'];
+    ta.value += emojis[Math.floor(Math.random() * emojis.length)];
+    ta.focus();
+}
+</script>
+{% endblock %}
+{% endblock %}
